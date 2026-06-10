@@ -5,9 +5,10 @@ import os
 import cv2
 import numpy as np
 import subprocess
+import time
 
 ML_API = "http://localhost:3333/p/"
-HOST_IP = "10.207.206.135"
+HOST_IP = "145.81.120.119"
 IMAGE_DIR = "/home/mvane/Documents/GitClone/InHollandPrinter/img"
 ML_API_DIR = "/home/mvane/Documents/GitClone/obico-server"
 PORT = 8080
@@ -23,6 +24,7 @@ def start_ml_api():
         print("ml_api container is already running")
 
 def start_image_server():
+    print(f"Starting image server at http://{HOST_IP}:{PORT}/")
     os.chdir(IMAGE_DIR)
     handler = http.server.SimpleHTTPRequestHandler
     server = http.server.HTTPServer(("", PORT), handler)
@@ -33,6 +35,7 @@ def start_image_server():
 def check_spaghetti(filename):
     image_url = f"http://{HOST_IP}:{PORT}/{filename}"
     response = requests.get(ML_API, params={"img": image_url})
+    print(response)
     return response.json().get("detections", [])
 
 def overlay_detections(filename, detections, confidence_threshold=0.3):
@@ -55,11 +58,17 @@ def overlay_detections(filename, detections, confidence_threshold=0.3):
         cv2.putText(img, f"{confidence:.0%}", (x1, y1 - 8),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-    output = "output2.jpg"
+    output = "output.jpg"
     cv2.imwrite(output, img)
     print(f"Saved to {output}")
+
 start_ml_api()
+time.sleep(5)
 start_image_server()
-filename = "fail5.jpg"
+filename = "fail.jpg"
+t1 = time.time()    
 detections = check_spaghetti(filename)
+print(detections)
 overlay_detections(filename, detections, confidence_threshold=0.3)
+t2 = time.time()
+print(f"Total time: {t2 - t1:.2f} seconds")
