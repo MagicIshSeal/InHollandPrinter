@@ -7,8 +7,9 @@ import subprocess
 import time
 import platform
 
+
 ML_API    = "http://localhost:3333/p/"
-HOST_IP   = "145.81.120.119"
+HOST_IP   = "10.127.122.135"
 IMAGE_DIR = "/home/mvane/Documents/GitClone/InHollandPrinter/img"
 ML_API_DIR = "/home/mvane/Documents/GitClone/obico-server"
 PORT = 8080
@@ -26,6 +27,7 @@ def start_ml_api():
         docker_cmd("ps", "ml_api"),
         capture_output=True, text=True
     )
+    
     if "Up" in result.stdout:
         print("ml_api container is already running")
     else:
@@ -44,7 +46,6 @@ def start_image_server():
 def check_spaghetti(filename):
     image_url = f"http://{HOST_IP}:{PORT}/{filename}"
     response = requests.get(ML_API, params={"img": image_url})
-    print(response)
     return response.json().get("detections", [])
 
 def overlay_detections(filename, detections, confidence_threshold=0.3):
@@ -64,14 +65,15 @@ def overlay_detections(filename, detections, confidence_threshold=0.3):
     cv2.imwrite(output, img)
     print(f"Saved to {output}")
 
-start_ml_api()
-time.sleep(5)
-start_image_server()
+if __name__ == "__main__":
+    start_ml_api()
+    time.sleep(1)
+    start_image_server()
 
-filename = "fail.jpg"
-t1 = time.time()
-detections = check_spaghetti(filename)
-print(detections)
-overlay_detections(filename, detections, confidence_threshold=0.3)
-t2 = time.time()
-print(f"Total time: {t2 - t1:.2f} seconds")
+    filename = "fail9.jpg"
+    t1 = time.time()
+    detections = check_spaghetti(filename)
+    print(detections)
+    overlay_detections(filename, detections, confidence_threshold=0.1)
+    t2 = time.time()
+    print(f"Total time: {t2 - t1:.2f} seconds")
