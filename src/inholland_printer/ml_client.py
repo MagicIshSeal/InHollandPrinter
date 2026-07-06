@@ -32,17 +32,19 @@ class MLApiDockerLifecycle:
         return base + list(args)
 
     def start(self) -> None:
-        os.chdir(self._project_dir)
         result = subprocess.run(
             self._docker_cmd("ps", "ml_api"),
-            capture_output=True, text=True,
+            cwd=self._project_dir,
+            capture_output=True,
+            text=True,
+            check=False,
         )
         if "Up" in result.stdout:
             print("ml_api container is already running")
-        else:
-            print("Starting ml_api container...")
-            subprocess.run(self._docker_cmd("up", "-d", "ml_api"))
+            return
 
+        print("Starting ml_api container...")
+        subprocess.run(self._docker_cmd("up", "-d", "ml_api"), cwd=self._project_dir, check=True)
 
 class ImageHttpServer:
     """Direct port of start_image_server()."""
