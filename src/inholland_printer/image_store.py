@@ -37,6 +37,8 @@ class LocalImageStore:
 
     def save_annotated(self, filename: str, detections: list, confidence_threshold: float = 0.3) -> str:
         img = cv2.imread(filename)
+        if img is None:
+            raise FileNotFoundError(f"Unable to read image for annotation: {filename}")
         for label, confidence, (cx, cy, w, h) in detections:
             if confidence < confidence_threshold:
                 continue
