@@ -57,6 +57,17 @@ def build_printer_dataframe(printer_client) -> pd.DataFrame:
 
     n = len(printers)
     cycle_time = settings.poll_cycle_seconds
+    if n == 0:
+        return pd.DataFrame({
+            "Name": [],
+            "UUID": [],
+            "State": [],
+            "TimeRemaining": [],
+            "Cam": [],
+            "CamUUID": [],
+            "CamName": [],
+            "LastImage": [],
+        })
     return pd.DataFrame({
         "Name":          [printer.name for printer in printers],
         "UUID":          [printer.uuid for printer in printers],
