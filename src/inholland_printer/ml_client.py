@@ -62,11 +62,11 @@ class ImageHttpServer:
 
     def start(self) -> None:
         print(f"Starting image server at http://{self._host_ip}:{self._port}/")
-        os.chdir(self._image_dir)
-        handler = http.server.SimpleHTTPRequestHandler
-        self._server = http.server.HTTPServer(("", self._port), handler)
-        thread = threading.Thread(target=self._server.serve_forever)
-        thread.daemon = True
+        from functools import partial
+
+        handler = partial(http.server.SimpleHTTPRequestHandler, directory=self._image_dir)
+        self._server = http.server.HTTPServer((self._host_ip, self._port), handler)
+        thread = threading.Thread(target=self._server.serve_forever, daemon=True)
         thread.start()
 
     # TODO: stop()/shutdown() — the original never stops this once started.
