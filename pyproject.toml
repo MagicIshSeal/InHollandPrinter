@@ -9,7 +9,7 @@ dependencies = [
     "pydantic-settings",
     "requests",
     "opencv-python",
-    # "prusa-connect-client",  # TODO: pin the actual PyPI/git name+version you use today
+    "prusa-connect-sdk-client",
 ]
 
 [tool.setuptools.packages.find]
