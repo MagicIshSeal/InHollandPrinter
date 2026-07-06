@@ -14,33 +14,33 @@ import os
 
 import cv2
 
-from inholland_printer.settings import settings
+from inhollandPrinter.settings import settings
 
 
 class LocalImageStore:
-    def __init__(self, snapshot_dir=settings.snapshot_dir):
-        self._snapshot_dir = str(snapshot_dir)
+    def __init__(self, snapshotDir=settings.snapshotDir):
+        self._snapshotDir = str(snapshotDir)
 
-    def save_snapshot(self, camera_id: str, image_bytes: bytes, index: int = 0) -> str:
-        cam_dir = os.path.join(self._snapshot_dir, str(camera_id))
-        os.makedirs(cam_dir, exist_ok=True)
+    def saveSnapshot(self, cameraId: str, imageBytes: bytes, index: int = 0) -> str:
+        camDir = os.path.join(self._snapshotDir, str(cameraId))
+        os.makedirs(camDir, exist_ok=True)
 
         if index == 0:
-            name = f"snapshot{camera_id}.jpg"
+            name = f"snapshot{cameraId}.jpg"
         else:
-            name = f"snapshot{camera_id}_{index}.jpg"
+            name = f"snapshot{cameraId}_{index}.jpg"
 
-        filepath = os.path.join(cam_dir, name)
+        filepath = os.path.join(camDir, name)
         with open(filepath, "wb") as f:
-            f.write(image_bytes)
+            f.write(imageBytes)
         return filepath
 
-    def save_annotated(self, filename: str, detections: list, confidence_threshold: float = 0.3) -> str:
+    def saveAnnotated(self, filename: str, detections: list, confidenceThreshold: float = 0.3) -> str:
         img = cv2.imread(filename)
         if img is None:
             raise FileNotFoundError(f"Unable to read image for annotation: {filename}")
         for label, confidence, (cx, cy, w, h) in detections:
-            if confidence < confidence_threshold:
+            if confidence < confidenceThreshold:
                 continue
             x1 = int(cx - w / 2)
             y1 = int(cy - h / 2)

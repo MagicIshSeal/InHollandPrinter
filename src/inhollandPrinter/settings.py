@@ -33,20 +33,20 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # --- ML detection API ---
-    ml_api_url: str = "http://localhost:3333/p/"
-    ml_api_project_dir: Path = Path("/home/mvane/Documents/GitClone/obico-server")
+    mlApiUrl: str = "http://localhost:3333/p/"
+    mlApiProjectDir: Path = Path("/home/mvane/Documents/GitClone/obico-server")
 
     # --- Local image HTTP server ---
-    image_server_host_ip: str = "10.127.122.135"
-    image_server_port: int = 8080
-    image_dir: Path = Path("/home/mvane/Documents/GitClone/InHollandPrinter/")
+    imageServerHostIp: str = "10.127.122.135"
+    imageServerPort: int = 8080
+    imageDir: Path = Path("/home/mvane/Documents/GitClone/InHollandPrinter/")
 
     # --- Snapshot storage — see NOTE above about the IMG_DIR/IMAGE_DIR mismatch ---
-    snapshot_dir: Path = Path("img")
+    snapshotDir: Path = Path("img")
 
     # --- Polling loop ---
-    poll_cycle_seconds: int = 15
-    main_loop_sleep_seconds: int = 5
+    pollCycleSeconds: int = 15
+    mainLoopSleepSeconds: int = 5
 
     # TODO: PrusaConnect credentials currently come from wherever
     # PrusaConnectClient() reads them by default. If that ever needs to

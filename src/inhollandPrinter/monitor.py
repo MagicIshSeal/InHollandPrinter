@@ -16,7 +16,7 @@ import logging
 import queue
 import threading
 
-from inholland_printer.settings import settings
+from inhollandPrinter.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -24,33 +24,33 @@ logger = logging.getLogger(__name__)
 class PrinterMonitor:
     """Direct port of getImage(), updateDF(), and checkPicture()."""
 
-    def __init__(self, printer_client, image_store, cycle_time: int = settings.poll_cycle_seconds):
-        self._printer_client = printer_client
-        self._image_store = image_store
-        self._cycle_time = cycle_time
+    def __init__(self, printer_client, image_store, cycleTime: int = settings.pollCycleSeconds):
+        self._printerClient = printer_client
+        self._imageStore = image_store
+        self._cycleTime = cycleTime
 
-    def get_image(self, cam, index: int = 0):
+    def getImage(self, cam, index: int = 0):
         """Direct port of getImage(). Combines fetching bytes (printer_client)
         with saving them (image_store) — the original did both in one
         function via the global `client`."""
         if cam is None:
             return None
         logger.info(f"Taking image from {cam.name}")
-        image_bytes = self._printer_client.get_snapshot(cam.id)
-        return self._image_store.save_snapshot(cam.id, image_bytes, index)
+        imageBytes = self._printerClient.getSnapshot(cam.id)
+        return self._imageStore.saveSnapshot(cam.id, imageBytes, index)
 
-    def update_dataframe(self, df) -> None:
+    def updateDataFrame(self, df) -> None:
         """Direct port of updateDF()."""
-        printers = self._printer_client.list_printers()
+        printers = self._printerClient.listPrinters()
         df["State"] = [printer.job.state if printer.job else "NONE" for printer in printers]
         df["TimeRemaining"] = [
             printer.job.time_remaining if printer.job else datetime.timedelta(0)
             for printer in printers
         ]
 
-    def check_pictures(self, df, t: float, index: int, on_image_ready) -> None:
+    def checkPictures(self, df, t: float, index: int, onImageReady) -> None:
         """
-        Direct port of checkPicture(). `on_image_ready(printer_name,
+        Direct port of checkPicture(). `onImageReady(printer_name,
         printer_uuid, filename)` replaces the original's direct calls
         to `pending_checks.add(...)` / `spaghetti_queue.put(...)` —
         that bookkeeping now lives in DetectionWorker.enqueue below.
@@ -61,12 +61,12 @@ class PrinterMonitor:
             if cam is None:
                 logger.info(f"No camera attached to printer {row['Name']}, skipping")
                 continue
-            t_remaining = row["TimeRemaining"]
-            if t_remaining >= datetime.timedelta(0) and t >= row["LastImage"] + self._cycle_time:
-                filename = self.get_image(cam, index)
+            tRemaining = row["TimeRemaining"]
+            if tRemaining >= datetime.timedelta(0) and t >= row["LastImage"] + self._cycleTime:
+                filename = self.getImage(cam, index)
                 logger.info(f"Saved image to {filename}")
                 df.at[idx, "LastImage"] = t
-                on_image_ready(row["Name"], row["UUID"], filename)
+                onImageReady(row["Name"], row["UUID"], filename)
             # elif t_remaining <= datetime.timedelta(0):
             #     logger.info(f"{row['Name']} has no active job, skipping")
 
@@ -75,17 +75,17 @@ class SpaghettiDetector:
     """Direct port of the check+overlay half of spaghetti_worker()."""
 
     def __init__(self, ml_client, image_store):
-        self._ml_client = ml_client
-        self._image_store = image_store
+        self._mlClient = ml_client
+        self._imageStore = image_store
 
-    def evaluate(self, printer_name: str, filename: str) -> list:
-        logger.info(f"Checking {filename} for spaghetti ({printer_name})")
-        detections = self._ml_client.check_for_spaghetti(filename)
+    def evaluate(self, printerName: str, filename: str) -> list:
+        logger.info(f"Checking {filename} for spaghetti ({printerName})")
+        detections = self._mlClient.checkForSpaghetti(filename)
         if detections:
-            logger.warning(f"Spaghetti detected on {printer_name}! ({filename})")
-            self._image_store.save_annotated(filename, detections)
+            logger.warning(f"Spaghetti detected on {printerName}! ({filename})")
+            self._imageStore.saveAnnotated(filename, detections)
         else:
-            logger.info(f"No spaghetti on {printer_name} ({filename})")
+            logger.info(f"No spaghetti on {printerName} ({filename})")
         return detections
 
     # TODO: confidence thresholds / N-consecutive-detections logic, and
@@ -103,32 +103,32 @@ class DetectionWorker:
     def __init__(self, detector: SpaghettiDetector):
         self._detector = detector
         self._queue: "queue.Queue" = queue.Queue()
-        self._pending_checks: set = set()
+        self._pendingChecks: set = set()
         self._thread: threading.Thread | None = None
 
     def start(self) -> None:
         self._thread = threading.Thread(target=self._run, daemon=True, name="spaghetti-worker")
         self._thread.start()
 
-    def enqueue(self, printer_name: str, printer_uuid: str, filename: str) -> None:
+    def enqueue(self, printerName: str, printerUuid: str, filename: str) -> None:
         """Direct port of the pending_checks/spaghetti_queue.put logic
         that lived inline inside checkPicture()."""
-        if printer_uuid in self._pending_checks:
-            logger.info(f"Spaghetti check already queued for {printer_name}, skipping this round")
+        if printerUuid in self._pendingChecks:
+            logger.info(f"Spaghetti check already queued for {printerName}, skipping this round")
             return
-        self._pending_checks.add(printer_uuid)
-        self._queue.put((printer_name, printer_uuid, filename))
+        self._pendingChecks.add(printerUuid)
+        self._queue.put((printerName, printerUuid, filename))
 
     def _run(self) -> None:
         """Direct port of spaghetti_worker()."""
         while True:
-            printer_name, printer_uuid, filename = self._queue.get()
+            printerName, printerUuid, filename = self._queue.get()
             try:
-                self._detector.evaluate(printer_name, filename)
+                self._detector.evaluate(printerName, filename)
             except Exception:
-                logger.exception(f"Spaghetti check failed for {printer_name} ({filename})")
+                logger.exception(f"Spaghetti check failed for {printerName} ({filename})")
             finally:
-                self._pending_checks.discard(printer_uuid)
+                self._pendingChecks.discard(printerUuid)
                 self._queue.task_done()
 
     # TODO: stop()/join() — the original never stops this once started.

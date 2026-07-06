@@ -16,7 +16,7 @@ import threading
 
 import requests
 
-from inholland_printer.settings import settings
+from inhollandPrinter.settings import settings
 
 IS_WINDOWS = platform.system() == "Windows"
 
@@ -24,17 +24,17 @@ IS_WINDOWS = platform.system() == "Windows"
 class MLApiDockerLifecycle:
     """Direct port of docker_cmd() + start_ml_api()."""
 
-    def __init__(self, project_dir=settings.ml_api_project_dir):
-        self._project_dir = str(project_dir)
+    def __init__(self, projectDir=settings.mlApiProjectDir):
+        self._projectDir = str(projectDir)
 
-    def _docker_cmd(self, *args: str) -> list[str]:
+    def _dockerCmd(self, *args: str) -> list[str]:
         base = ["docker", "compose"] if IS_WINDOWS else ["sudo", "docker", "compose"]
         return base + list(args)
 
     def start(self) -> None:
         result = subprocess.run(
-            self._docker_cmd("ps", "ml_api"),
-            cwd=self._project_dir,
+            self._dockerCmd("ps", "ml_api"),
+            cwd=self._projectDir,
             capture_output=True,
             text=True,
             check=False,
@@ -44,28 +44,28 @@ class MLApiDockerLifecycle:
             return
 
         print("Starting ml_api container...")
-        subprocess.run(self._docker_cmd("up", "-d", "ml_api"), cwd=self._project_dir, check=True)
+        subprocess.run(self._dockerCmd("up", "-d", "ml_api"), cwd=self._projectDir, check=True)
 
 class ImageHttpServer:
     """Direct port of start_image_server()."""
 
     def __init__(
         self,
-        image_dir=settings.image_dir,
-        host_ip: str = settings.image_server_host_ip,
-        port: int = settings.image_server_port,
+        imageDir=settings.imageDir,
+        hostIp: str = settings.imageServerHostIp,
+        port: int = settings.imageServerPort,
     ):
-        self._image_dir = str(image_dir)
-        self._host_ip = host_ip
+        self._imageDir = str(imageDir)
+        self._hostIp = hostIp
         self._port = port
         self._server: http.server.HTTPServer | None = None
 
     def start(self) -> None:
-        print(f"Starting image server at http://{self._host_ip}:{self._port}/")
+        print(f"Starting image server at http://{self._hostIp}:{self._port}/")
         from functools import partial
 
-        handler = partial(http.server.SimpleHTTPRequestHandler, directory=self._image_dir)
-        self._server = http.server.HTTPServer((self._host_ip, self._port), handler)
+        handler = partial(http.server.SimpleHTTPRequestHandler, directory=self._imageDir)
+        self._server = http.server.HTTPServer((self._hostIp, self._port), handler)
         thread = threading.Thread(target=self._server.serve_forever, daemon=True)
         thread.start()
 
@@ -77,16 +77,16 @@ class ObicoMLClient:
 
     def __init__(
         self,
-        ml_api_url: str = settings.ml_api_url,
-        host_ip: str = settings.image_server_host_ip,
-        port: int = settings.image_server_port,
+        mlApiUrl: str = settings.mlApiUrl,
+        hostIp: str = settings.imageServerHostIp,
+        port: int = settings.imageServerPort,
     ):
-        self._ml_api_url = ml_api_url
-        self._host_ip = host_ip
+        self._mlApiUrl = mlApiUrl
+        self._hostIp = hostIp
         self._port = port
 
-    def check_for_spaghetti(self, filename: str) -> list:
-        image_url = f"http://{self._host_ip}:{self._port}/{filename}"
-        response = requests.get(self._ml_api_url, params={"img": image_url}, timeout=10)
+    def checkForSpaghetti(self, filename: str) -> list:
+        imageUrl = f"http://{self._hostIp}:{self._port}/{filename}"
+        response = requests.get(self._mlApiUrl, params={"img": imageUrl}, timeout=10)
         response.raise_for_status()
         return response.json().get("detections", [])

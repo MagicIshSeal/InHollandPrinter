@@ -18,13 +18,13 @@ class PrinterClient:
     def __init__(self):
         self._client = PrusaConnectClient()
 
-    def list_printers(self):
+    def listPrinters(self):
         return self._client.printers.list_printers()
 
-    def list_cameras(self):
+    def listCameras(self):
         return self._client.cameras.list()
 
-    def get_snapshot(self, camera_id: str) -> bytes:
+    def getSnapshot(self, camera_id: str) -> bytes:
         return self._client.get_snapshot(camera_id)
 
     # TODO: pause_print(printer) -> None
