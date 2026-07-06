@@ -9,7 +9,6 @@ ports of start_ml_api(), start_image_server(), and check_spaghetti()
 from the original getFailure.py.
 """
 import http.server
-import os
 import platform
 import subprocess
 import threading
