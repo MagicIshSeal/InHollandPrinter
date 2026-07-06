@@ -1,0 +1,20 @@
+[project]
+name = "inholland-printer"
+version = "0.1.0"
+description = "Printer fleet monitoring and spaghetti detection for InHolland's 3D printers"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "structlog",
+    "pydantic-settings",
+    "requests",
+    "opencv-python",
+    # "prusa-connect-client",  # TODO: pin the actual PyPI/git name+version you use today
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

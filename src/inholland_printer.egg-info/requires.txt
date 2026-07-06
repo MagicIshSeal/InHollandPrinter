@@ -1,0 +1,5 @@
+pandas
+structlog
+pydantic-settings
+requests
+opencv-python
