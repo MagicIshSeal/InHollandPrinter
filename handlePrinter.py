@@ -97,7 +97,7 @@ def checkPicture(df, t, i=0):
             logger.info(f"No camera attached to printer {row['Name']}, skipping")
             continue
         t_remaining = row["TimeRemaining"]
-        if t >= row["LastImage"] + cycleTime:
+        if t_remaining >= datetime.timedelta(0) and t >= row["LastImage"] + cycleTime:
             filename = getImage(cam, i)
             logger.info(f"Saved image to {filename}")
             df.at[idx, "LastImage"] = t
