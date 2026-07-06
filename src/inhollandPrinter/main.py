@@ -79,7 +79,7 @@ def buildPrinterDataFrame(printer_client) -> pd.DataFrame:
         "Cam":           matched_cams,
         "CamUUID":       [cam.id if cam else None for cam in matched_cams],
         "CamName":       [cam.name if cam else None for cam in matched_cams],
-        "LastImage":     [cycleTime / n * i for i in range(n)],
+        "LastImage":     [time.time() - cycleTime + (cycleTime / n) * i for i in range(n)],
     })
 
 
