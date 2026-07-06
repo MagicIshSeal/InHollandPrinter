@@ -87,5 +87,6 @@ class ObicoMLClient:
 
     def check_for_spaghetti(self, filename: str) -> list:
         image_url = f"http://{self._host_ip}:{self._port}/{filename}"
-        response = requests.get(self._ml_api_url, params={"img": image_url})
+        response = requests.get(self._ml_api_url, params={"img": image_url}, timeout=10)
+        response.raise_for_status()
         return response.json().get("detections", [])
