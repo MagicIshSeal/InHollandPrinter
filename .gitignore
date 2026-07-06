@@ -3,3 +3,5 @@ __pycache__
 *.jpg
 *.csv
 img/*
+/src/inholland_printer.egg-info/
+/inholland_printer.egg-info/
