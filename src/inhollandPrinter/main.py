@@ -67,6 +67,7 @@ def buildPrinterDataFrame(printer_client) -> pd.DataFrame:
             "CamUUID": [],
             "CamName": [],
             "LastImage": [],
+            "index": [],
         })
     return pd.DataFrame({
         "Name":          [printer.name for printer in printers],
@@ -80,6 +81,7 @@ def buildPrinterDataFrame(printer_client) -> pd.DataFrame:
         "CamUUID":       [cam.id if cam else None for cam in matched_cams],
         "CamName":       [cam.name if cam else None for cam in matched_cams],
         "LastImage":     [time.time() - cycleTime + (cycleTime / n) * i for i in range(n)],
+        "index":         [0 for printer in printers],
     })
 
 
@@ -114,7 +116,7 @@ def main() -> None:
     # --- main loop: direct port of the trailing `while True` ---
     while True:
         monitor.updateDataFrame(printFrame)
-        monitor.checkPictures(printFrame, time.time(), index=0, onImageReady=worker.enqueue)
+        monitor.checkPictures(printFrame, time.time(), onImageReady=worker.enqueue)
         time.sleep(settings.mainLoopSleepSeconds)
 
 

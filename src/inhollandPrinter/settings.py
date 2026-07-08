@@ -13,16 +13,6 @@ lives here now, read from environment variables / a .env file:
 
 Nothing else in the codebase should read os.environ directly or
 hardcode a path/IP. Need a new configurable value? Add it here first.
-
-NOTE found while porting: the original code has TWO separate,
-inconsistent directories for images — IMG_DIR ("img", relative, used
-for saving snapshots) and IMAGE_DIR (an absolute path, used by the
-image HTTP server to know what to serve). They look like they're meant
-to be the same folder but are defined independently in the two
-original files. Kept as two separate settings here to replicate
-current behavior exactly — but if they ever drift apart, the image
-server won't find the files monitor.py just saved. Worth pointing both
-at the same value once you touch this again.
 """
 from pathlib import Path
 
@@ -37,7 +27,7 @@ class Settings(BaseSettings):
     mlApiProjectDir: Path = Path("/home/mvane/Documents/GitClone/obico-server")
 
     # --- Local image HTTP server ---
-    imageServerHostIp: str = "10.127.122.135"
+    imageServerHostIp: str = "145.81.121.204"
     imageServerPort: int = 8080
     imageDir: Path = Path("/home/mvane/Documents/GitClone/InHollandPrinter/")
 

@@ -37,7 +37,7 @@ class PrinterMonitor:
             return None
         logger.info(f"Taking image from {cam.name}")
         imageBytes = self._printerClient.getSnapshot(cam.id)
-        return self._imageStore.saveSnapshot(cam.id, imageBytes, index)
+        return self._imageStore.saveSnapshot(cam.id, imageBytes, index=index)
 
     def updateDataFrame(self, df) -> None:
         """Direct port of updateDF()."""
@@ -48,7 +48,7 @@ class PrinterMonitor:
             for printer in printers
         ]
 
-    def checkPictures(self, df, t: float, index: int, onImageReady) -> None:
+    def checkPictures(self, df, t: float, onImageReady) -> None:
         """
         Direct port of checkPicture(). `onImageReady(printer_name,
         printer_uuid, filename)` replaces the original's direct calls
@@ -63,7 +63,11 @@ class PrinterMonitor:
                 continue
             tRemaining = row["TimeRemaining"]
             if tRemaining >= datetime.timedelta(0) and t >= row["LastImage"] + self._cycleTime:
-                filename = self.getImage(cam, index)
+                filename = self.getImage(cam, index=row["index"])
+                row["index"] += 1
+                if row["index"] > 4:
+                    row["index"] = 0
+                logger.info(f"Image index: {row['index']}")
                 logger.info(f"Saved image to {filename}")
                 df.at[idx, "LastImage"] = t
                 onImageReady(row["Name"], row["UUID"], filename)

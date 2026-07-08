@@ -9,6 +9,7 @@ ports of start_ml_api(), start_image_server(), and check_spaghetti()
 from the original getFailure.py.
 """
 import http.server
+import logging
 import platform
 import subprocess
 import threading
@@ -18,6 +19,7 @@ import requests
 from inhollandPrinter.settings import settings
 
 IS_WINDOWS = platform.system() == "Windows"
+logger = logging.getLogger(__name__)
 
 
 class MLApiDockerLifecycle:
@@ -48,6 +50,10 @@ class MLApiDockerLifecycle:
 class ImageHttpServer:
     """Direct port of start_image_server()."""
 
+    class _LoggedRequestHandler(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, format: str, *args) -> None:
+            logger.info("%s - - [%s] %s", self.address_string(), self.log_date_time_string(), format % args)
+
     def __init__(
         self,
         imageDir=settings.imageDir,
@@ -63,7 +69,7 @@ class ImageHttpServer:
         print(f"Starting image server at http://{self._hostIp}:{self._port}/")
         from functools import partial
 
-        handler = partial(http.server.SimpleHTTPRequestHandler, directory=self._imageDir)
+        handler = partial(self._LoggedRequestHandler, directory=self._imageDir)
         self._server = http.server.HTTPServer((self._hostIp, self._port), handler)
         thread = threading.Thread(target=self._server.serve_forever, daemon=True)
         thread.start()
