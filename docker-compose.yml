@@ -1,0 +1,30 @@
+services:
+  printer-monitor:
+    build: .
+    container_name: inholland-printer
+    volumes:
+      - ./img:/app/img
+      - ./src/inhollandPrinter/printers.json:/app/src/inhollandPrinter/printers.json:ro
+      - ./.env:/app/.env:ro
+    environment:
+      - ML_API_URL=http://ml_api:3333/p/
+      - IMAGE_SERVER_PUBLIC_HOST=printer-monitor
+    depends_on:
+      ml_api:
+        condition: service_healthy
+
+  ml_api:
+    build: ../obico-server/ml_api
+    hostname: ml_api
+    ports:
+      - "3333:3333"
+    command: bash -c "gunicorn --bind 0.0.0.0:3333 --workers 1 wsgi"
+    environment:
+      - DEBUG=True
+      - FLASK_APP=server.py
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3333/hc/"]
+      start_period: 30s
+      interval: 30s
+      timeout: 10s
+      retries: 3

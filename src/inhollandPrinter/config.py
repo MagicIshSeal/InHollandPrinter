@@ -3,7 +3,7 @@ from pathlib import Path
 
 REQUEST_TIMEOUT = 5  # seconds; keep short so one dead printer doesn't stall the rest
 
-PRINTERS_FILE = "printers.json"
+PRINTERS_FILE = Path(__file__).parent / "printers.json"
 
 
 class PrinterDict(dict):

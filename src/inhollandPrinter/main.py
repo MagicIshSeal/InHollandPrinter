@@ -12,7 +12,7 @@ import time
 import structlog
 
 from inhollandPrinter.imageStore import LocalImageStore
-from inhollandPrinter.mlClient import ImageHttpServer, MLApiDockerLifecycle, ObicoMLClient
+from inhollandPrinter.mlClient import ImageHttpServer, ObicoMLClient
 from inhollandPrinter.monitor import DetectionWorker, PrinterMonitor, SpaghettiDetector
 from inhollandPrinter.printerClient import PrinterClient
 from inhollandPrinter.settings import settings
@@ -59,7 +59,6 @@ def main() -> None:
     ml_client = ObicoMLClient()
     image_store = LocalImageStore()
     image_server = ImageHttpServer()
-    ml_api_lifecycle = MLApiDockerLifecycle()
 
     # --- wiring ---
     detector = SpaghettiDetector(ml_client, image_store)
@@ -67,10 +66,7 @@ def main() -> None:
     worker.start()
     monitor = PrinterMonitor(printer_client, image_store)
 
-    # --- startup sequence: direct port of startSpaghetti() ---
-    ml_api_lifecycle.start()
-    logger.info("Spaghetti Detector API started")
-    time.sleep(2.5)
+    # --- startup sequence ---
     image_server.start()
     logger.info("Image server started")
 

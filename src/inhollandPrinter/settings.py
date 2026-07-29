@@ -24,13 +24,13 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # --- ML detection API ---
-    mlApiUrl: str = "http://localhost:3333/p/"
-    mlApiProjectDir: Path = Path("/home/mvane/Documents/GitClone/obico-server")
+    mlApiUrl: str = "http://ml_api:3333/p/"
 
     # --- Local image HTTP server ---
-    imageServerHostIp: str = "145.81.121.204"
+    imageServerHostIp: str = "0.0.0.0"
     imageServerPort: int = 8080
-    imageDir: Path = Path("/home/mvane/Documents/GitClone/InHollandPrinter/")
+    imageServerPublicHost: str = "localhost"
+    imageDir: Path = Path(".")
 
     # --- Snapshot storage — see NOTE above about the IMG_DIR/IMAGE_DIR mismatch ---
     snapshotDir: Path = Path("img")
