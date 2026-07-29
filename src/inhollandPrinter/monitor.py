@@ -17,9 +17,12 @@ import queue
 import threading
 
 from inhollandPrinter.settings import settings
+from inhollandPrinter.config import *
+from inhollandPrinter.auth import login
+import prusa.connect.client.exceptions as prusa_exceptions
+
 
 logger = logging.getLogger(__name__)
-
 
 class PrinterMonitor:
     """Direct port of getImage(), updateDF(), and checkPicture()."""
@@ -29,26 +32,53 @@ class PrinterMonitor:
         self._imageStore = image_store
         self._cycleTime = cycleTime
 
-    def getImage(self, cam, index: int = 0):
+    def getImage(self, printerName: str, index: int = 0):
         """Direct port of getImage(). Combines fetching bytes (printer_client)
         with saving them (image_store) — the original did both in one
         function via the global `client`."""
-        if cam is None:
-            return None
-        logger.info(f"Taking image from {cam.name}")
-        imageBytes = self._printerClient.getSnapshot(cam.id)
-        return self._imageStore.saveSnapshot(cam.id, imageBytes, index=index)
+        logger.info(f"Taking image for {printerName}")
+        imageBytes = self._printerClient.getSnapshot(printerName)
+        return self._imageStore.saveSnapshot(printerName, imageBytes, index=index)
 
-    def updateDataFrame(self, df) -> None:
-        """Direct port of updateDF()."""
-        printers = self._printerClient.listPrinters()
-        df["State"] = [printer.job.state if printer.job else "NONE" for printer in printers]
-        df["TimeRemaining"] = [
-            printer.job.time_remaining if printer.job else datetime.timedelta(0)
-            for printer in printers
-        ]
+    def updatePrinterStatus(self) -> None:
+            for printerName in printers.keys():
+                try:
+                    client = login(printers.public_ip_id(printerName))
+                    response = client.api_request("GET", "/api/v1/status")
+    
+                    printer_state = response.get("printer", {})
+                    job_state = response.get("job", {})
+    
+                    dict.__getitem__(printers, printerName).update(
+                        {
+                            "status": printer_state.get("state", "UNKNOWN"),
+                            "temp_nozzle": printer_state.get("temp_nozzle"),
+                            "temp_bed": printer_state.get("temp_bed"),
+                            "time_remaining": job_state.get("time_remaining"),
+                            "job_id": job_state.get("id"),
+                        }
+                    )
+    
+                    # print(
+                    #     f"{printerName}: {printers.get_status(printerName)}, "
+                    #     f"bed={printers.get_bed_temp(printerName)}, "
+                    #     f"nozzle={printers.get_nozzle_temp(printerName)}, "
+                    #     f"remaining={printers.get_time_remaining(printerName)}, "
+                    #     f"job={printers.get_job_id(printerName)}"
+                    # )
+                except prusa_exceptions.PrusaApiError:
+                    dict.__getitem__(printers, printerName).update(
+                        {
+                            "status": "DISCONNECTED",
+                            "temp_nozzle": None,
+                            "temp_bed": None,
+                            "time_remaining": None,
+                            "job_id": None,
+                        }
+                    )
+                    logger.warning(f"{printerName}: DISCONNECTED")    
 
-    def checkPictures(self, df, t: float, onImageReady) -> None:
+    def checkPictures(self, t: float, onImageReady) -> None:
         """
         Direct port of checkPicture(). `onImageReady(printer_name,
         printer_uuid, filename)` replaces the original's direct calls
@@ -56,23 +86,24 @@ class PrinterMonitor:
         that bookkeeping now lives in DetectionWorker.enqueue below.
         """
         logger.info(f"Checking printers for images at {datetime.datetime.fromtimestamp(t)}")
-        for idx, row in df.iterrows():
-            cam = row["Cam"]
-            if cam is None:
-                logger.info(f"No camera attached to printer {row['Name']}, skipping")
-                continue
-            tRemaining = row["TimeRemaining"]
-            if tRemaining >= datetime.timedelta(0) and t >= row["LastImage"] + self._cycleTime:
-                filename = self.getImage(cam, index=row["index"])
-                row["index"] += 1
-                if row["index"] > 4:
-                    row["index"] = 0
-                logger.info(f"Image index: {row['index']}")
+        for printerName in printers.keys():
+            # TODO : check for camera presence, and skip if not present. The original
+            tRemaining = printers.get_time_remaining(printerName)
+            if tRemaining >= datetime.timedelta(0) and t >= printers.get_last_image(printerName) + self._cycleTime:
+                filename = self.getImage(printerName, index=printers.get_index(printerName))
+                printers.set_index(printerName, printers.get_index(printerName) + 1)
+                
+                if printers.get_index(printerName) > 4:
+                    printers.set_index(printerName, 0)
+                    
+                logger.info(f"Image index: {printers.get_index(printerName)}")
                 logger.info(f"Saved image to {filename}")
-                df.at[idx, "LastImage"] = t
-                onImageReady(row["Name"], row["UUID"], filename)
-            # elif t_remaining <= datetime.timedelta(0):
-            #     logger.info(f"{row['Name']} has no active job, skipping")
+                
+                printers.set_last_image(printerName, t)
+                
+                onImageReady(printerName, printers.get_uuid(printerName), filename)
+            elif tRemaining <= datetime.timedelta(0):
+                 logger.info(f"{printerName} has no active job, skipping")
 
 
 class SpaghettiDetector:

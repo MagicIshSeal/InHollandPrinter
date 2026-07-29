@@ -16,6 +16,7 @@ hardcode a path/IP. Need a new configurable value? Add it here first.
 """
 from pathlib import Path
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -37,6 +38,16 @@ class Settings(BaseSettings):
     # --- Polling loop ---
     pollCycleSeconds: int = 15
     mainLoopSleepSeconds: int = 5
+
+    # --- PrusaLink credentials ---
+    localUsername: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("LOCAL_USERNAME", "localUsername"),
+    )
+    localPassword: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("LOCAL_PASSWORD", "localPassword"),
+    )
 
     # TODO: PrusaConnect credentials currently come from wherever
     # PrusaConnectClient() reads them by default. If that ever needs to

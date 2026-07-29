@@ -21,14 +21,14 @@ class LocalImageStore:
     def __init__(self, snapshotDir=settings.snapshotDir):
         self._snapshotDir = str(snapshotDir)
 
-    def saveSnapshot(self, cameraId: str, imageBytes: bytes, index: int = 0) -> str:
-        camDir = os.path.join(self._snapshotDir, str(cameraId))
+    def saveSnapshot(self, printerName: str, imageBytes: bytes, index: int = 0) -> str:
+        camDir = os.path.join(self._snapshotDir, str(printerName))
         os.makedirs(camDir, exist_ok=True)
 
         if index == 0:
-            name = f"snapshot{cameraId}.jpg"
+            name = f"snapshot{printerName}.jpg"
         else:
-            name = f"snapshot{cameraId}_{index}.jpg"
+            name = f"snapshot{printerName}_{index}.jpg"
 
         filepath = os.path.join(camDir, name)
         with open(filepath, "wb") as f:
