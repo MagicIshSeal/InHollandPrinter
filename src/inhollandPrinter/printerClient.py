@@ -11,21 +11,29 @@ Direct port of what handlePrinter.py did directly at module level:
 No new behavior — just wrapped in a class instead of a bare global
 `client`, so main.py creates it once and passes it to whatever needs it.
 """
-from prusa.connect.client import PrusaConnectClient
+from inhollandPrinter.auth import login
+from inhollandPrinter.config import *
 
+class PrinterClient:    
+    def getSnapshot(printerName : str, save_path : str = None) -> bytes:
+        client = login(printers.public_ip_id(printerName))
+        _image = client.api_request("GET", f"/api/v1/cameras/snap", raw=True)
+        return _image.content
+    
+    def stopPrint(printerName : str) -> None:
+        """Stop the print on the given printer."""
+        client = login(printers.public_ip_id(printerName))
+        response = client.api_request("GET", "/api/v1/status")
+        jobid = response["job"]["id"]
+        response = client.api_request("DELETE", f"/api/v1/job/{jobid}")
+        
+    def resumePrint(printerName : str) -> None:
+        """Resume the print on the given printer."""
+        client = login(printers.public_ip_id(printerName))
+        response = client.api_request("GET", "/api/v1/status")
+        jobid = response["job"]["id"]
+        response = client.api_request("POST", f"/api/v1/job/{jobid}/resume")
 
-class PrinterClient:
-    def __init__(self):
-        self._client = PrusaConnectClient()
-
-    def listPrinters(self):
-        return self._client.printers.list_printers()
-
-    def listCameras(self):
-        return self._client.cameras.list()
-
-    def getSnapshot(self, camera_id: str) -> bytes:
-        return self._client.get_snapshot(camera_id)
 
     # TODO: pause_print(printer) -> None
     # Not implemented anywhere in the current code — detection happens,

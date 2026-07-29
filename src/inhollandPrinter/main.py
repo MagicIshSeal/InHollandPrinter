@@ -9,7 +9,6 @@ import datetime
 import logging
 import time
 
-import pandas as pd
 import structlog
 
 from inhollandPrinter.imageStore import LocalImageStore
@@ -28,6 +27,10 @@ class ColorFormatter(logging.Formatter):
         levelname = record.levelname
         if record.levelno == logging.INFO:
             record.levelname = f"{self.BLUE}{levelname}{self.RESET}"
+        elif record.levelno == logging.WARNING:
+            record.levelname = f"\033[33m{levelname}{self.RESET}"
+        elif record.levelno == logging.ERROR:
+            record.levelname = f"\033[31m{levelname}{self.RESET}"
         formatted = super().format(record)
         record.levelname = levelname
         return formatted
@@ -46,43 +49,6 @@ def configureLogging() -> logging.Logger:
         wrapper_class=structlog.make_filtering_bound_logger(logging.ERROR),
     )
     return logging.getLogger(__name__)
-
-
-def buildPrinterDataFrame(printer_client) -> pd.DataFrame:
-    """Direct port of the module-level DataFrame construction in handlePrinter.py."""
-    printers = printer_client.listPrinters()
-    cameras = printer_client.listCameras()
-    cameras_by_printer_uuid = {cam.printer_uuid: cam for cam in cameras if cam.printer_uuid}
-    matched_cams = [cameras_by_printer_uuid.get(printer.uuid) for printer in printers]
-
-    n = len(printers)
-    cycleTime = settings.pollCycleSeconds
-    if n == 0:
-        return pd.DataFrame({
-            "Name": [],
-            "UUID": [],
-            "State": [],
-            "TimeRemaining": [],
-            "Cam": [],
-            "CamUUID": [],
-            "CamName": [],
-            "LastImage": [],
-            "index": [],
-        })
-    return pd.DataFrame({
-        "Name":          [printer.name for printer in printers],
-        "UUID":          [printer.uuid for printer in printers],
-        "State":         [printer.job.state if printer.job else "NONE" for printer in printers],
-        "TimeRemaining": [
-            printer.job.time_remaining if printer.job else datetime.timedelta(0)
-            for printer in printers
-        ],
-        "Cam":           matched_cams,
-        "CamUUID":       [cam.id if cam else None for cam in matched_cams],
-        "CamName":       [cam.name if cam else None for cam in matched_cams],
-        "LastImage":     [time.time() - cycleTime + (cycleTime / n) * i for i in range(n)],
-        "index":         [0 for printer in printers],
-    })
 
 
 def main() -> None:
@@ -108,15 +74,10 @@ def main() -> None:
     image_server.start()
     logger.info("Image server started")
 
-    # --- initial printer/camera table: direct port of module-level setup ---
-    printFrame = buildPrinterDataFrame(printer_client)
-    printFrame.drop(columns=["Cam"]).to_csv("printer_info.csv", index=False)
-    logger.info(printFrame.head())
-
     # --- main loop: direct port of the trailing `while True` ---
     while True:
-        monitor.updateDataFrame(printFrame)
-        monitor.checkPictures(printFrame, time.time(), onImageReady=worker.enqueue)
+        monitor.updatePrinterStatus()
+        monitor.checkPictures(datetime.datetime.now(), onImageReady=worker.enqueue)
         time.sleep(settings.mainLoopSleepSeconds)
 
 
