@@ -27,10 +27,10 @@ class Settings(BaseSettings):
     mlApiUrl: str = "http://ml_api:3333/p/"
 
     # --- Local image HTTP server ---
-    imageServerHostIp: str = "0.0.0.0"
-    imageServerPort: int = 8080
-    imageServerPublicHost: str = "localhost"
-    imageDir: Path = Path(".")
+    imageServerHostIp: str = Field(default="0.0.0.0", validation_alias=AliasChoices("IMAGE_SERVER_HOST_IP", "imageServerHostIp"))
+    imageServerPort: int = Field(default=8080, validation_alias=AliasChoices("IMAGE_SERVER_PORT", "imageServerPort"))
+    imageServerPublicHost: str = Field(default="localhost", validation_alias=AliasChoices("IMAGE_SERVER_PUBLIC_HOST", "imageServerPublicHost"))
+    imageDir: Path = Field(default=Path("."), validation_alias=AliasChoices("IMAGE_DIR", "imageDir"))
 
     # --- Snapshot storage — see NOTE above about the IMG_DIR/IMAGE_DIR mismatch ---
     snapshotDir: Path = Path("img")

@@ -55,6 +55,9 @@ class PrinterDict(dict):
     def set_last_image(self, key, value):
         self[key]["last_image"] = value
 
+    def get_uuid(self, key):
+        return self[key].get("uuid", "00000000-0000-0000-0000-000000000000")
+
 
 def load_printers(path: Path = PRINTERS_FILE) -> PrinterDict:
     with open(path) as f:

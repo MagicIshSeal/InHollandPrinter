@@ -78,18 +78,19 @@ class PrinterMonitor:
                     )
                     logger.warning(f"{printerName}: DISCONNECTED")    
 
-    def checkPictures(self, t: float, onImageReady) -> None:
-        """
-        Direct port of checkPicture(). `onImageReady(printer_name,
-        printer_uuid, filename)` replaces the original's direct calls
-        to `pending_checks.add(...)` / `spaghetti_queue.put(...)` —
-        that bookkeeping now lives in DetectionWorker.enqueue below.
-        """
-        logger.info(f"Checking printers for images at {datetime.datetime.fromtimestamp(t)}")
+    def checkPictures(self, t: datetime.datetime, onImageReady) -> None:
+        logger.info(f"Checking printers for images at {t}")
         for printerName in printers.keys():
-            # TODO : check for camera presence, and skip if not present. The original
             tRemaining = printers.get_time_remaining(printerName)
-            if tRemaining >= datetime.timedelta(0) and t >= printers.get_last_image(printerName) + self._cycleTime:
+            if isinstance(tRemaining, (int, float)):
+                tRemaining = datetime.timedelta(seconds=tRemaining)
+            hasActiveJob = (
+                tRemaining is not None and tRemaining >= datetime.timedelta(0)
+            )
+            if hasActiveJob and (
+                printers.get_last_image(printerName) is None
+                or t >= printers.get_last_image(printerName) + datetime.timedelta(seconds=self._cycleTime)
+            ):
                 filename = self.getImage(printerName, index=printers.get_index(printerName))
                 printers.set_index(printerName, printers.get_index(printerName) + 1)
                 
@@ -102,7 +103,7 @@ class PrinterMonitor:
                 printers.set_last_image(printerName, t)
                 
                 onImageReady(printerName, printers.get_uuid(printerName), filename)
-            elif tRemaining <= datetime.timedelta(0):
+            elif tRemaining is not None and tRemaining <= datetime.timedelta(0):
                  logger.info(f"{printerName} has no active job, skipping")
 
 
