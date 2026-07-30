@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     # --- ML detection API ---
     mlApiUrl: str = "http://ml_api:3333/p/"
+    mlApiTimeout: int = Field(default=30, validation_alias=AliasChoices("ML_API_TIMEOUT", "mlApiTimeout"))
 
     # --- Local image HTTP server ---
     imageServerHostIp: str = Field(default="0.0.0.0", validation_alias=AliasChoices("IMAGE_SERVER_HOST_IP", "imageServerHostIp"))
@@ -41,6 +42,7 @@ class Settings(BaseSettings):
 
     # --- Spaghetti detection ---
     confidenceThreshold: float = Field(default=0.5, validation_alias=AliasChoices("CONFIDENCE_THRESHOLD", "confidenceThreshold"))
+    consecutiveFailureLimit: int = Field(default=3, validation_alias=AliasChoices("CONSECUTIVE_FAILURE_LIMIT", "consecutiveFailureLimit"))
 
     # --- PrusaLink credentials ---
     localUsername: str | None = Field(

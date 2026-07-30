@@ -61,7 +61,7 @@ def main() -> None:
     image_server = ImageHttpServer()
 
     # --- wiring ---
-    detector = SpaghettiDetector(ml_client, image_store)
+    detector = SpaghettiDetector(ml_client, image_store, printer_client)
     worker = DetectionWorker(detector)
     worker.start()
     monitor = PrinterMonitor(printer_client, image_store)

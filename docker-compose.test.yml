@@ -20,3 +20,5 @@ services:
     environment:
       - ML_API_URL=http://ml_api:3333/p/
       - IMAGE_SERVER_PUBLIC_HOST=printer-monitor
+      - LOCAL_USERNAME=test123
+      - LOCAL_PASSWORD=test123

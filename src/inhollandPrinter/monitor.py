@@ -108,11 +108,11 @@ class PrinterMonitor:
 
 
 class SpaghettiDetector:
-    """Direct port of the check+overlay half of spaghetti_worker()."""
-
-    def __init__(self, ml_client, image_store):
+    def __init__(self, ml_client, image_store, printer_client):
         self._mlClient = ml_client
         self._imageStore = image_store
+        self._printerClient = printer_client
+        self._failureCounts: dict[str, int] = {}
 
     def evaluate(self, printerName: str, filename: str) -> list:
         logger.info(f"Checking {filename} for spaghetti ({printerName})")
@@ -120,19 +120,25 @@ class SpaghettiDetector:
         threshold = settings.confidenceThreshold
         filtered = [d for d in detections if d[1] >= threshold]
         if filtered:
-            logger.warning(f"Spaghetti detected on {printerName}! ({filename})")
+            count = self._failureCounts.get(printerName, 0) + 1
+            self._failureCounts[printerName] = count
+            confs = ", ".join(f"{d[1]:.0%}" for d in filtered)
+            logger.warning(f"Spaghetti detected on {printerName}! (consecutive failure {count}, confidence {confs}) ({filename})")
             self._imageStore.saveAnnotated(printerName, filename, detections, threshold)
+            if count >= settings.consecutiveFailureLimit:
+                logger.warning(f"Stopping print on {printerName} after {count} consecutive failures")
+                try:
+                    self._printerClient.stopPrint(printerName)
+                except Exception:
+                    logger.exception(f"Failed to stop print on {printerName}")
         elif detections:
-            logger.info(f"Spaghetti detected on {printerName} but below {threshold:.0%} confidence ({filename})")
+            confs = ", ".join(f"{d[1]:.0%}" for d in detections)
+            logger.info(f"Spaghetti detected on {printerName} but below {threshold:.0%} confidence ({confs}) ({filename})")
+            self._failureCounts[printerName] = 0
         else:
             logger.info(f"No spaghetti on {printerName} ({filename})")
+            self._failureCounts[printerName] = 0
         return filtered
-
-    # TODO: confidence thresholds / N-consecutive-detections logic, and
-    # an actual call to pause the print. The original code — and this
-    # port — only ever detects and logs/annotates. Nothing anywhere
-    # stops a real print yet. That's the next real feature to build,
-    # once printer_client.py has a pause_print() method to call.
 
 
 class DetectionWorker:

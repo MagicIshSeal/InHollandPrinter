@@ -110,6 +110,13 @@ class MockPrusaLinkHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+    def do_DELETE(self):
+        if not self._check_auth():
+            return self._send_401()
+        print(f"[mock-printer] Job cancelled via {self.path}")
+        self.send_response(204)
+        self.end_headers()
+
     def log_message(self, fmt, *args):
         print(f"[mock-printer] {args[0]} {args[1]} {args[2]}")
 

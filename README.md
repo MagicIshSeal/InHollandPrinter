@@ -61,6 +61,8 @@ All via environment variables (or `.env` file):
 | `POLL_CYCLE_SECONDS` | `15` | Min seconds between snapshots of the same printer |
 | `MAIN_LOOP_SLEEP_SECONDS` | `5` | Sleep between main loop iterations |
 | `CONFIDENCE_THRESHOLD` | `0.3` | Minimum ML confidence to report/annotate spaghetti |
+| `CONSECUTIVE_FAILURE_LIMIT` | `3` | Consecutive spaghetti detections before stopping the print |
+| `ML_API_TIMEOUT` | `30` | Seconds to wait for ML API response before timing out |
 
 ## Printers
 

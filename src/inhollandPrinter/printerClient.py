@@ -21,16 +21,18 @@ class PrinterClient:
         return _image.content
 
     def stopPrint(self, printerName: str) -> None:
+        jobid = printers.get_job_id(printerName)
+        if jobid is None:
+            raise RuntimeError(f"No active job for {printerName}")
         client = login(printers.public_ip_id(printerName))
-        response = client.api_request("GET", "/api/v1/status")
-        jobid = response["job"]["id"]
-        response = client.api_request("DELETE", f"/api/v1/job/{jobid}")
+        client.api_request("DELETE", f"/api/v1/job/{jobid}")
 
     def resumePrint(self, printerName: str) -> None:
+        jobid = printers.get_job_id(printerName)
+        if jobid is None:
+            raise RuntimeError(f"No active job for {printerName}")
         client = login(printers.public_ip_id(printerName))
-        response = client.api_request("GET", "/api/v1/status")
-        jobid = response["job"]["id"]
-        response = client.api_request("POST", f"/api/v1/job/{jobid}/resume")
+        client.api_request("POST", f"/api/v1/job/{jobid}/resume")
 
 
     # TODO: pause_print(printer) -> None
