@@ -59,13 +59,13 @@ class PrinterMonitor:
                         }
                     )
     
-                    # print(
-                    #     f"{printerName}: {printers.get_status(printerName)}, "
-                    #     f"bed={printers.get_bed_temp(printerName)}, "
-                    #     f"nozzle={printers.get_nozzle_temp(printerName)}, "
-                    #     f"remaining={printers.get_time_remaining(printerName)}, "
-                    #     f"job={printers.get_job_id(printerName)}"
-                    # )
+                    print(
+                        f"{printerName}: {printers.get_status(printerName)}, "
+                        f"bed={printers.get_bed_temp(printerName)}, "
+                        f"nozzle={printers.get_nozzle_temp(printerName)}, "
+                        f"remaining={printers.get_time_remaining(printerName)}, "
+                        f"job={printers.get_job_id(printerName)}"
+                    )
                 except prusa_exceptions.PrusaApiError:
                     dict.__getitem__(printers, printerName).update(
                         {
@@ -117,12 +117,14 @@ class SpaghettiDetector:
     def evaluate(self, printerName: str, filename: str) -> list:
         logger.info(f"Checking {filename} for spaghetti ({printerName})")
         detections = self._mlClient.checkForSpaghetti(filename)
-        if detections:
+        threshold = settings.confidenceThreshold
+        filtered = [d for d in detections if d[1] >= threshold]
+        if filtered:
             logger.warning(f"Spaghetti detected on {printerName}! ({filename})")
-            self._imageStore.saveAnnotated(printerName, filename, detections)
+            self._imageStore.saveAnnotated(printerName, filename, detections, threshold)
         else:
             logger.info(f"No spaghetti on {printerName} ({filename})")
-        return detections
+        return filtered
 
     # TODO: confidence thresholds / N-consecutive-detections logic, and
     # an actual call to pause the print. The original code — and this

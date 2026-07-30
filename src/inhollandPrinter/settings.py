@@ -36,8 +36,11 @@ class Settings(BaseSettings):
     snapshotDir: Path = Path("img")
 
     # --- Polling loop ---
-    pollCycleSeconds: int = 15
-    mainLoopSleepSeconds: int = 5
+    pollCycleSeconds: int = Field(default=15, validation_alias=AliasChoices("POLL_CYCLE_SECONDS", "pollCycleSeconds"))
+    mainLoopSleepSeconds: int = Field(default=5, validation_alias=AliasChoices("MAIN_LOOP_SLEEP_SECONDS", "mainLoopSleepSeconds"))
+
+    # --- Spaghetti detection ---
+    confidenceThreshold: float = Field(default=0.5, validation_alias=AliasChoices("CONFIDENCE_THRESHOLD", "confidenceThreshold"))
 
     # --- PrusaLink credentials ---
     localUsername: str | None = Field(

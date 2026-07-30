@@ -21,6 +21,11 @@ cp .env.example .env
 docker compose up --build
 ```
 
+View images while running (separate terminal):
+```bash
+xdg-open img/<PrinterName>/          # raw snapshots + annotated images (use your printer name)
+```
+
 ## Test (with mock printer)
 
 Uses a mock printer (Digest Auth, hardcoded `test_img/fail.jpg` snapshot) so you don't need real hardware.
@@ -35,19 +40,27 @@ The ML API healthcheck + model load takes ~30s, then the monitor starts polling.
 
 Output locations (on host):
 - Raw snapshots: `./img/<PrinterName>/snapshot<PrinterName>_<index>.jpg`
-- Annotated images (spaghetti boxes drawn): `./img/test/<PrinterName>/snapshot<PrinterName>_<index>_annotated.jpg`
+- Annotated images (spaghetti boxes drawn): `./img/<PrinterName>/snapshot<PrinterName>_<index>_annotated.jpg`
+
+View images while the test runs (separate terminal):
+```bash
+xdg-open img/Mock\ Printer/        # raw snapshots + annotated images
+```
 
 ## Configuration
 
 All via environment variables (or `.env` file):
 
 | Variable | Default | Description |
-|---|---|---|
+|---|---|---|---|
 | `LOCAL_USERNAME` | — | PrusaLink username |
 | `LOCAL_PASSWORD` | — | PrusaLink password |
 | `ML_API_URL` | `http://ml_api:3333/p/` | ML detection endpoint |
 | `IMAGE_SERVER_PUBLIC_HOST` | `printer-monitor` | Hostname ML API uses to fetch snapshots |
-| `SNAPSHOT_DIR` | `img/` | Directory for raw snapshots |
+| `SNAPSHOT_DIR` | `img/` | Directory for raw snapshots & annotated images |
+| `POLL_CYCLE_SECONDS` | `15` | Min seconds between snapshots of the same printer |
+| `MAIN_LOOP_SLEEP_SECONDS` | `5` | Sleep between main loop iterations |
+| `CONFIDENCE_THRESHOLD` | `0.3` | Minimum ML confidence to report/annotate spaghetti |
 
 ## Printers
 
