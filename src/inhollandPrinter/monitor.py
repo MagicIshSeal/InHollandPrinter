@@ -119,7 +119,7 @@ class SpaghettiDetector:
         detections = self._mlClient.checkForSpaghetti(filename)
         if detections:
             logger.warning(f"Spaghetti detected on {printerName}! ({filename})")
-            self._imageStore.saveAnnotated(filename, detections)
+            self._imageStore.saveAnnotated(printerName, filename, detections)
         else:
             logger.info(f"No spaghetti on {printerName} ({filename})")
         return detections
