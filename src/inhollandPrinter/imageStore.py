@@ -54,7 +54,7 @@ class LocalImageStore:
                 img, f"{confidence:.0%}", (x1, y1 - 8),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2,
             )
-        outDir = os.path.join(self._snapshotDir, str(printerName))
+        outDir = os.path.join(self._snapshotDir, str(printerName), "annotated")
         os.makedirs(outDir, exist_ok=True)
         base = os.path.splitext(os.path.basename(filename))[0]
         output = os.path.join(outDir, f"{base}_annotated.jpg")
