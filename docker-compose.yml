@@ -2,6 +2,7 @@ services:
   printer-monitor:
     build: .
     container_name: inholland-printer
+    restart: unless-stopped
     volumes:
       - ./img:/app/img
       - ./src/inhollandPrinter/printers.json:/app/src/inhollandPrinter/printers.json:ro
