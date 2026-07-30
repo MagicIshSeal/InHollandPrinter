@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     confidenceThreshold: float = Field(default=0.5, validation_alias=AliasChoices("CONFIDENCE_THRESHOLD", "confidenceThreshold"))
     consecutiveFailureLimit: int = Field(default=3, validation_alias=AliasChoices("CONSECUTIVE_FAILURE_LIMIT", "consecutiveFailureLimit"))
 
+    # --- Logging ---
+    logLevel: str = Field(default="INFO", validation_alias=AliasChoices("LOG_LEVEL", "logLevel"))
+
     # --- PrusaLink credentials ---
     localUsername: str | None = Field(
         default=None,

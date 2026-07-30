@@ -79,7 +79,7 @@ class PrinterMonitor:
                     logger.warning(f"{printerName}: DISCONNECTED")    
 
     def checkPictures(self, t: datetime.datetime, onImageReady) -> None:
-        logger.info(f"Checking printers for images at {t}")
+        logger.debug(f"Checking printers for images at {t}")
         for printerName in printers.keys():
             tRemaining = printers.get_time_remaining(printerName)
             if isinstance(tRemaining, (int, float)):
@@ -97,14 +97,14 @@ class PrinterMonitor:
                 if printers.get_index(printerName) > 4:
                     printers.set_index(printerName, 0)
                     
-                logger.info(f"Image index: {printers.get_index(printerName)}")
-                logger.info(f"Saved image to {filename}")
+                logger.debug(f"Image index: {printers.get_index(printerName)}")
+                logger.debug(f"Saved image to {filename}")
                 
                 printers.set_last_image(printerName, t)
                 
                 onImageReady(printerName, filename)
             elif tRemaining is not None and tRemaining <= datetime.timedelta(0):
-                 logger.info(f"{printerName} has no active job, skipping")
+                 logger.debug(f"{printerName} has no active job, skipping")
 
 
 class SpaghettiDetector:
@@ -158,7 +158,7 @@ class DetectionWorker:
 
     def enqueue(self, printerName: str, filename: str) -> None:
         if printerName in self._pendingChecks:
-            logger.info(f"Spaghetti check already queued for {printerName}, skipping this round")
+            logger.debug(f"Spaghetti check already queued for {printerName}, skipping this round")
             return
         self._pendingChecks.add(printerName)
         self._queue.put((printerName, filename))

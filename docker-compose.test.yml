@@ -13,6 +13,8 @@ services:
       - TIME_REMAINING=3600
 
   printer-monitor:
+    ports:
+      - "8080:8080"
     volumes:
       - ./img:/app/img
       - ./test/printers.test.json:/app/src/inhollandPrinter/printers.json:ro
@@ -22,3 +24,11 @@ services:
       - IMAGE_SERVER_PUBLIC_HOST=printer-monitor
       - LOCAL_USERNAME=test123
       - LOCAL_PASSWORD=test123
+
+  test-api:
+    image: python:3.12-slim
+    command: python /test/test_api.py
+    volumes:
+      - ./test:/test
+    depends_on:
+      - printer-monitor

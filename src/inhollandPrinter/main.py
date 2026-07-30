@@ -43,7 +43,7 @@ def configureLogging() -> logging.Logger:
         fmt="%(asctime)s [%(levelname)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     ))
-    logging.basicConfig(level=logging.INFO, handlers=[handler])
+    logging.basicConfig(level=getattr(logging, settings.logLevel.upper(), logging.INFO), handlers=[handler])
 
     structlog.configure(
         wrapper_class=structlog.make_filtering_bound_logger(logging.ERROR),

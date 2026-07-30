@@ -40,11 +40,22 @@ The ML API healthcheck + model load takes ~30s, then the monitor starts polling.
 
 Output locations (on host):
 - Raw snapshots: `./img/<PrinterName>/snapshot<PrinterName>_<index>.jpg`
-- Annotated images (spaghetti boxes drawn): `./img/<PrinterName>/snapshot<PrinterName>_<index>_annotated.jpg`
+- Annotated images: `./img/<PrinterName>/annotated/snapshot<PrinterName>_<index>_annotated.jpg`
 
 View images while the test runs (separate terminal):
 ```bash
 xdg-open img/Mock\ Printer/        # raw snapshots + annotated images
+```
+
+The image server also exposes a latest-image API on port 8080:
+
+```bash
+# List latest annotated image per printer
+curl http://localhost:8080/api/latest
+
+# Get the latest annotated image for a specific printer
+curl -o latest.jpg http://localhost:8080/api/latest/Mock%20Printer
+xdg-open latest.jpg
 ```
 
 ## Configuration
@@ -69,12 +80,10 @@ All via environment variables (or `.env` file):
 Edit `src/inhollandPrinter/printers.json`:
 
 ```json
-[
-"Printer Name": {"public_ip": "192.168.0.1", 
-                  "local_ip": "192.168.0.1", 
-                  "id": "1", 
-                  }
-]
+{
+  "My Printer": {"public_ip": "192.168.0.1", "local_ip": "192.168.0.1", "id": "1"},
+  "Second Printer": {"copy_from": "My Printer", "id": "2"}
+}
 ```
 
 ## Project Structure
@@ -89,13 +98,13 @@ InHollandPrinter/
 │   └── printers.test.json      # Test printer config
 ├── test_img/
 │   └── fail.jpg                # Known spaghetti image
-├── img/                        # Output: raw snapshots + annotated images
+├── img/                        # Output: raw snapshots + annotated/ subfolders
 ├── src/inhollandPrinter/
 │   ├── main.py                 # Entry point
 │   ├── monitor.py              # Polling loop + spaghetti detection pipeline
 │   ├── settings.py             # pydantic-settings config
 │   ├── printerClient.py        # PrusaLink HTTP client
 │   ├── imageStore.py           # Save raw & annotated images
-│   └── mlClient.py             # ML API client
+│   └── mlClient.py             # Image server (+ /api/latest endpoint) + ML API client
 └── .env                        # Credentials (gitignored)
 ```
