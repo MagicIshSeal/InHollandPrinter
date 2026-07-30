@@ -102,7 +102,7 @@ class PrinterMonitor:
                 
                 printers.set_last_image(printerName, t)
                 
-                onImageReady(printerName, printers.get_uuid(printerName), filename)
+                onImageReady(printerName, filename)
             elif tRemaining is not None and tRemaining <= datetime.timedelta(0):
                  logger.info(f"{printerName} has no active job, skipping")
 
@@ -122,6 +122,8 @@ class SpaghettiDetector:
         if filtered:
             logger.warning(f"Spaghetti detected on {printerName}! ({filename})")
             self._imageStore.saveAnnotated(printerName, filename, detections, threshold)
+        elif detections:
+            logger.info(f"Spaghetti detected on {printerName} but below {threshold:.0%} confidence ({filename})")
         else:
             logger.info(f"No spaghetti on {printerName} ({filename})")
         return filtered
@@ -148,25 +150,22 @@ class DetectionWorker:
         self._thread = threading.Thread(target=self._run, daemon=True, name="spaghetti-worker")
         self._thread.start()
 
-    def enqueue(self, printerName: str, printerUuid: str, filename: str) -> None:
-        """Direct port of the pending_checks/spaghetti_queue.put logic
-        that lived inline inside checkPicture()."""
-        if printerUuid in self._pendingChecks:
+    def enqueue(self, printerName: str, filename: str) -> None:
+        if printerName in self._pendingChecks:
             logger.info(f"Spaghetti check already queued for {printerName}, skipping this round")
             return
-        self._pendingChecks.add(printerUuid)
-        self._queue.put((printerName, printerUuid, filename))
+        self._pendingChecks.add(printerName)
+        self._queue.put((printerName, filename))
 
     def _run(self) -> None:
-        """Direct port of spaghetti_worker()."""
         while True:
-            printerName, printerUuid, filename = self._queue.get()
+            printerName, filename = self._queue.get()
             try:
                 self._detector.evaluate(printerName, filename)
             except Exception:
                 logger.exception(f"Spaghetti check failed for {printerName} ({filename})")
             finally:
-                self._pendingChecks.discard(printerUuid)
+                self._pendingChecks.discard(printerName)
                 self._queue.task_done()
 
     # TODO: stop()/join() — the original never stops this once started.
