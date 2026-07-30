@@ -14,21 +14,19 @@ No new behavior — just wrapped in a class instead of a bare global
 from inhollandPrinter.auth import login
 from inhollandPrinter.config import *
 
-class PrinterClient:    
-    def getSnapshot(printerName : str, save_path : str = None) -> bytes:
+class PrinterClient:
+    def getSnapshot(self, printerName: str) -> bytes:
         client = login(printers.public_ip_id(printerName))
-        _image = client.api_request("GET", f"/api/v1/cameras/snap", raw=True)
+        _image = client.api_request("GET", "/api/v1/cameras/snap", raw=True)
         return _image.content
-    
-    def stopPrint(printerName : str) -> None:
-        """Stop the print on the given printer."""
+
+    def stopPrint(self, printerName: str) -> None:
         client = login(printers.public_ip_id(printerName))
         response = client.api_request("GET", "/api/v1/status")
         jobid = response["job"]["id"]
         response = client.api_request("DELETE", f"/api/v1/job/{jobid}")
-        
-    def resumePrint(printerName : str) -> None:
-        """Resume the print on the given printer."""
+
+    def resumePrint(self, printerName: str) -> None:
         client = login(printers.public_ip_id(printerName))
         response = client.api_request("GET", "/api/v1/status")
         jobid = response["job"]["id"]

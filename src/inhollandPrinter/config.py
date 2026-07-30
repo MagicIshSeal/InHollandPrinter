@@ -3,7 +3,7 @@ from pathlib import Path
 
 REQUEST_TIMEOUT = 5  # seconds; keep short so one dead printer doesn't stall the rest
 
-PRINTERS_FILE = "printers.json"
+PRINTERS_FILE = Path(__file__).parent / "printers.json"
 
 
 class PrinterDict(dict):
@@ -50,10 +50,13 @@ class PrinterDict(dict):
         return self[key]["index"] if "index" in self[key] else 0
 
     def set_index(self, key, value):
-        self[key]["index"] = value
-        
+        dict.__getitem__(self, key)["index"] = value
+
     def set_last_image(self, key, value):
-        self[key]["last_image"] = value
+        dict.__getitem__(self, key)["last_image"] = value
+
+    def get_uuid(self, key):
+        return self[key].get("uuid", "00000000-0000-0000-0000-000000000000")
 
 
 def load_printers(path: Path = PRINTERS_FILE) -> PrinterDict:

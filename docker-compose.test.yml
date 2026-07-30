@@ -1,0 +1,22 @@
+services:
+  mock-printer:
+    image: python:3.12-slim
+    command: python /test/mock_printer.py
+    volumes:
+      - ./test:/test
+      - ./test_img:/test_img:ro
+    environment:
+      - LOCAL_USERNAME=test123
+      - LOCAL_PASSWORD=test123
+      - SNAPSHOT_FILE=/test_img/fail.jpg
+      - PRINTER_STATE=PRINTING
+      - TIME_REMAINING=3600
+
+  printer-monitor:
+    volumes:
+      - ./img:/app/img
+      - ./test/printers.test.json:/app/src/inhollandPrinter/printers.json:ro
+      - ./.env:/app/.env:ro
+    environment:
+      - ML_API_URL=http://ml_api:3333/p/
+      - IMAGE_SERVER_PUBLIC_HOST=printer-monitor

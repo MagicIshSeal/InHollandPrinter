@@ -24,20 +24,23 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # --- ML detection API ---
-    mlApiUrl: str = "http://localhost:3333/p/"
-    mlApiProjectDir: Path = Path("/home/mvane/Documents/GitClone/obico-server")
+    mlApiUrl: str = "http://ml_api:3333/p/"
 
     # --- Local image HTTP server ---
-    imageServerHostIp: str = "145.81.121.204"
-    imageServerPort: int = 8080
-    imageDir: Path = Path("/home/mvane/Documents/GitClone/InHollandPrinter/")
+    imageServerHostIp: str = Field(default="0.0.0.0", validation_alias=AliasChoices("IMAGE_SERVER_HOST_IP", "imageServerHostIp"))
+    imageServerPort: int = Field(default=8080, validation_alias=AliasChoices("IMAGE_SERVER_PORT", "imageServerPort"))
+    imageServerPublicHost: str = Field(default="localhost", validation_alias=AliasChoices("IMAGE_SERVER_PUBLIC_HOST", "imageServerPublicHost"))
+    imageDir: Path = Field(default=Path("."), validation_alias=AliasChoices("IMAGE_DIR", "imageDir"))
 
     # --- Snapshot storage — see NOTE above about the IMG_DIR/IMAGE_DIR mismatch ---
     snapshotDir: Path = Path("img")
 
     # --- Polling loop ---
-    pollCycleSeconds: int = 15
-    mainLoopSleepSeconds: int = 5
+    pollCycleSeconds: int = Field(default=15, validation_alias=AliasChoices("POLL_CYCLE_SECONDS", "pollCycleSeconds"))
+    mainLoopSleepSeconds: int = Field(default=5, validation_alias=AliasChoices("MAIN_LOOP_SLEEP_SECONDS", "mainLoopSleepSeconds"))
+
+    # --- Spaghetti detection ---
+    confidenceThreshold: float = Field(default=0.5, validation_alias=AliasChoices("CONFIDENCE_THRESHOLD", "confidenceThreshold"))
 
     # --- PrusaLink credentials ---
     localUsername: str | None = Field(
