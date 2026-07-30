@@ -59,13 +59,13 @@ class PrinterMonitor:
                         }
                     )
     
-                    print(
-                        f"{printerName}: {printers.get_status(printerName)}, "
-                        f"bed={printers.get_bed_temp(printerName)}, "
-                        f"nozzle={printers.get_nozzle_temp(printerName)}, "
-                        f"remaining={printers.get_time_remaining(printerName)}, "
-                        f"job={printers.get_job_id(printerName)}"
-                    )
+                    # print(
+                    #     f"{printerName}: {printers.get_status(printerName)}, "
+                    #     f"bed={printers.get_bed_temp(printerName)}, "
+                    #     f"nozzle={printers.get_nozzle_temp(printerName)}, "
+                    #     f"remaining={printers.get_time_remaining(printerName)}, "
+                    #     f"job={printers.get_job_id(printerName)}"
+                    # )
                 except prusa_exceptions.PrusaApiError:
                     dict.__getitem__(printers, printerName).update(
                         {
