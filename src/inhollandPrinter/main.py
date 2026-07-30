@@ -45,6 +45,8 @@ def configureLogging() -> logging.Logger:
     ))
     logging.basicConfig(level=getattr(logging, settings.logLevel.upper(), logging.INFO), handlers=[handler])
 
+    logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
+
     structlog.configure(
         wrapper_class=structlog.make_filtering_bound_logger(logging.ERROR),
     )

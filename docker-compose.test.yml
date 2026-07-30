@@ -24,6 +24,7 @@ services:
       - IMAGE_SERVER_PUBLIC_HOST=printer-monitor
       - LOCAL_USERNAME=test123
       - LOCAL_PASSWORD=test123
+      - LOG_LEVEL=DEBUG
 
   test-api:
     image: python:3.12-slim
