@@ -9,8 +9,8 @@ Monitors PrusaLink-connected printers, captures snapshots during active prints, 
 ## Quick Start
 
 ```bash
-# 1. Clone with submodules
-git clone --recurse-submodules <repo-url>
+# 1. Clone
+git clone <repo-url>
 cd InHollandPrinter
 
 # 2. Configure credentials
