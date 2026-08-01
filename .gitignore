@@ -6,3 +6,4 @@ img/*
 /src/inholland_printer.egg-info/
 /inholland_printer.egg-info/
 .env
+AGENTS.md
