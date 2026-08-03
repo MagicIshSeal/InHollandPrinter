@@ -1,6 +1,6 @@
 # InHollandPrinter — Spaghetti Detection for 3D Printers
 
-Monitors PrusaLink-connected printers, captures snapshots during active prints, and runs them through a YOLO-based ML model to detect spaghetti failures.
+Monitors PrusaLink-connected printers, captures snapshots during active prints, and runs them through a YOLO-based ML model to detect spaghetti failures. In Core One mode (`SET_CORE_ONE=true`) snapshots are fetched from a plain HTTP endpoint on a Raspberry Pi, while status polling still goes through PrusaLink.
 
 ## Prerequisites
 
@@ -66,6 +66,8 @@ All via environment variables (or `.env` file):
 |---|---|---|---|
 | `LOCAL_USERNAME` | — | PrusaLink username |
 | `LOCAL_PASSWORD` | — | PrusaLink password |
+| `SET_CORE_ONE` | `false` | Fetch snapshots from the Core One HTTP endpoint instead of PrusaLink cameras |
+| `CORE_ONE_IMG` | — | Raspberry Pi IP/hostname serving Core One images (endpoint path in `printerClient.py` `CORE_ONE_ENDPOINT`) |
 | `ML_API_URL` | `http://ml_api:3333/p/` | ML detection endpoint |
 | `IMAGE_SERVER_PUBLIC_HOST` | `printer-monitor` | Hostname ML API uses to fetch snapshots |
 | `SNAPSHOT_DIR` | `img/` | Directory for raw snapshots & annotated images |
@@ -74,7 +76,6 @@ All via environment variables (or `.env` file):
 | `CONFIDENCE_THRESHOLD` | `0.3` | Minimum ML confidence to report/annotate spaghetti |
 | `CONSECUTIVE_FAILURE_LIMIT` | `3` | Consecutive spaghetti detections before stopping the print |
 | `ML_API_TIMEOUT` | `30` | Seconds to wait for ML API response before timing out |
-
 ## Printers
 
 Edit `src/inhollandPrinter/printers.json`:
