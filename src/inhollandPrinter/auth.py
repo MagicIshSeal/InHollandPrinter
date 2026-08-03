@@ -47,11 +47,14 @@ class PrusaLinkClient(PrusaConnectClient):
             ))
 
 
-def login(address):
+def login(address, password=None):
     """address (including printer id): 145.81.22.25/1
     """
     _client = PrusaLinkClient(
-        credentials=PrusaLinkCredentials(LOCAL_USERNAME, LOCAL_PASSWORD),
+        credentials=PrusaLinkCredentials(
+            LOCAL_USERNAME,
+            password or LOCAL_PASSWORD
+        ),
         base_url=f"http://{address}"
     )
     return _client

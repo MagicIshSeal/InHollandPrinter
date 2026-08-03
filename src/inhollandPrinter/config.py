@@ -44,6 +44,10 @@ class PrinterDict(dict):
     def get_job_id(self, key):
         return self[key]["job_id"] if "job_id" in self[key] else None
 
+    def get_password(self, key):
+        """Per-printer password override from printers.json, if set."""
+        return self[key].get("password") if "password" in self[key] else None
+
     def get_last_image(self, key):
         return self[key]["last_image"] if "last_image" in self[key] else None
 

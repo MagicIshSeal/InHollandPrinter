@@ -43,7 +43,7 @@ class PrinterMonitor:
     def updatePrinterStatus(self) -> None:
             for printerName in printers.keys():
                 try:
-                    client = login(printers.public_ip_id(printerName))
+                    client = login(printers.public_ip_id(printerName), printers.get_password(printerName))
                     response = client.api_request("GET", "/api/v1/status")
     
                     printer_state = response.get("printer", {})
