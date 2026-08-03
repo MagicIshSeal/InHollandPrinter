@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 # The endpoint is a format template — {printerName} is replaced with the
 # URL-encoded printer name, so it can be part of the path or query.
 # TODO: fill in the exact endpoint path, e.g. "/cameras/{printerName}/snapshot"
-CORE_ONE_ENDPOINT = "/{printerName}"
+CORE_ONE_ENDPOINT = "image/{printerName}"
 
 
 class PrinterClient:

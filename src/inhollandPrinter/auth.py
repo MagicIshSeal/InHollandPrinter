@@ -10,6 +10,8 @@ LOCAL_PASSWORD = settings.localPassword
 
 # PrusaLink utilizes http digest, such we change credential to simple ones
 # Also change _request to utilize simple credentials
+
+
 class PrusaLinkCredentials:
     def __init__(self, username, password):
         self.username = username
@@ -18,9 +20,12 @@ class PrusaLinkCredentials:
     def before_request(self, headers):
         pass
 
+
 class PrusaLinkClient(PrusaConnectClient):
-    def get_app_config(self): # Override to prevent Connect URL which is invalid for PrusaLink
+    # Override to prevent Connect URL which is invalid for PrusaLink
+    def get_app_config(self):
         return None
+
     def _request(self, method, endpoint, **kwargs):
         kwargs.setdefault(
             "auth",
@@ -30,6 +35,7 @@ class PrusaLinkClient(PrusaConnectClient):
             )
         )
         return super()._request(method, endpoint, **kwargs)
+
     def link_request(self, method: str, endpoint, **kwargs):
         return self.api_request(
             method,
@@ -39,6 +45,7 @@ class PrusaLinkClient(PrusaConnectClient):
                 LOCAL_USERNAME or "",
                 LOCAL_PASSWORD or ""
             ))
+
 
 def login(address):
     """address (including printer id): 145.81.22.25/1
