@@ -11,6 +11,8 @@ Direct port of what handlePrinter.py did directly at module level:
 No new behavior — just wrapped in a class instead of a bare global
 `client`, so main.py creates it once and passes it to whatever needs it.
 """
+from urllib.parse import quote
+
 from inhollandPrinter.auth import login
 from inhollandPrinter.config import *
 from inhollandPrinter.settings import settings
@@ -22,21 +24,24 @@ logger = logging.getLogger(__name__)
 
 # Core One mode: images come from a plain unauthenticated HTTP endpoint on
 # the Pi instead of the PrusaLink camera snapshot.
-# TODO: fill in the exact endpoint path, e.g. "/snapshot" or "/api/image"
-CORE_ONE_ENDPOINT = "/"
+# The endpoint is a format template — {printerName} is replaced with the
+# URL-encoded printer name, so it can be part of the path or query.
+# TODO: fill in the exact endpoint path, e.g. "/cameras/{printerName}/snapshot"
+CORE_ONE_ENDPOINT = "/{printerName}"
 
 
 class PrinterClient:
     def getSnapshot(self, printerName: str) -> bytes:
         if settings.setCoreOne:
-            return self._getCoreOneSnapshot()
+            return self._getCoreOneSnapshot(printerName)
         client = login(printers.public_ip_id(printerName))
         _image = client.api_request("GET", "/api/v1/cameras/snap", raw=True)
         return _image.content
 
-    def _getCoreOneSnapshot(self) -> bytes:
-        url = f"http://{settings.coreOneImg}{CORE_ONE_ENDPOINT}"
-        logger.info("Fetching Core One image from %s", url)
+    def _getCoreOneSnapshot(self, printerName: str) -> bytes:
+        endpoint = CORE_ONE_ENDPOINT.format(printerName=quote(printerName))
+        url = f"http://{settings.coreOneImg}{endpoint}"
+        logger.info("Fetching Core One image for %s from %s", printerName, url)
         response = requests.get(url, timeout=settings.mlApiTimeout)
         response.raise_for_status()
         return response.content
