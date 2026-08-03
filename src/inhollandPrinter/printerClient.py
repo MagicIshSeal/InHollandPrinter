@@ -13,12 +13,33 @@ No new behavior — just wrapped in a class instead of a bare global
 """
 from inhollandPrinter.auth import login
 from inhollandPrinter.config import *
+from inhollandPrinter.settings import settings
+
+import logging
+import requests
+
+logger = logging.getLogger(__name__)
+
+# Core One mode: images come from a plain unauthenticated HTTP endpoint on
+# the Pi instead of the PrusaLink camera snapshot.
+# TODO: fill in the exact endpoint path, e.g. "/snapshot" or "/api/image"
+CORE_ONE_ENDPOINT = "/"
+
 
 class PrinterClient:
     def getSnapshot(self, printerName: str) -> bytes:
+        if settings.setCoreOne:
+            return self._getCoreOneSnapshot()
         client = login(printers.public_ip_id(printerName))
         _image = client.api_request("GET", "/api/v1/cameras/snap", raw=True)
         return _image.content
+
+    def _getCoreOneSnapshot(self) -> bytes:
+        url = f"http://{settings.coreOneImg}{CORE_ONE_ENDPOINT}"
+        logger.info("Fetching Core One image from %s", url)
+        response = requests.get(url, timeout=settings.mlApiTimeout)
+        response.raise_for_status()
+        return response.content
 
     def stopPrint(self, printerName: str) -> None:
         jobid = printers.get_job_id(printerName)

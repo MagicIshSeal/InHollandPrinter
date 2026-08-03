@@ -47,6 +47,16 @@ class Settings(BaseSettings):
     # --- Logging ---
     logLevel: str = Field(default="INFO", validation_alias=AliasChoices("LOG_LEVEL", "logLevel"))
 
+    # --- Core One image source ---
+    setCoreOne: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("SET_CORE_ONE", "setCoreOne"),
+    )
+    coreOneImg: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("CORE_ONE_IMG", "coreOneImg"),
+    )
+
     # --- PrusaLink credentials ---
     localUsername: str | None = Field(
         default=None,
