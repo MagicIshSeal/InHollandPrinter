@@ -82,10 +82,12 @@ Edit `src/inhollandPrinter/printers.json`:
 
 ```json
 {
-  "My Printer": {"public_ip": "192.168.0.1", "local_ip": "192.168.0.1", "id": "1"},
+  "My Printer": {"public_ip": "192.168.0.1", "local_ip": "192.168.0.1", "id": "1", "password": "optional-per-printer-password"},
   "Second Printer": {"copy_from": "My Printer", "id": "2"}
 }
 ```
+
+An optional `password` field overrides the global `LOCAL_PASSWORD` for that printer (inherited via `copy_from` when not set explicitly). Useful when individual printers have unique credentials.
 
 ## Project Structure
 

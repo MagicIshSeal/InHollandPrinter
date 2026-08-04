@@ -27,9 +27,10 @@ logger = logging.getLogger(__name__)
 class PrinterMonitor:
     """Direct port of getImage(), updateDF(), and checkPicture()."""
 
-    def __init__(self, printer_client, image_store, cycleTime: int = settings.pollCycleSeconds):
+    def __init__(self, printer_client, image_store, detector, cycleTime: int = settings.pollCycleSeconds):
         self._printerClient = printer_client
         self._imageStore = image_store
+        self._detector = detector
         self._cycleTime = cycleTime
 
     def getImage(self, printerName: str, index: int = 0):
@@ -43,7 +44,7 @@ class PrinterMonitor:
     def updatePrinterStatus(self) -> None:
             for printerName in printers.keys():
                 try:
-                    client = login(printers.public_ip_id(printerName))
+                    client = login(printers.login_address(printerName), printers.get_password(printerName))
                     response = client.api_request("GET", "/api/v1/status")
     
                     printer_state = response.get("printer", {})
@@ -103,8 +104,9 @@ class PrinterMonitor:
                 printers.set_last_image(printerName, t)
                 
                 onImageReady(printerName, filename)
-            elif tRemaining is not None and tRemaining <= datetime.timedelta(0):
+            elif not hasActiveJob:
                  logger.debug(f"{printerName} has no active job, skipping")
+                 self._detector.reset(printerName)
 
 
 class SpaghettiDetector:
@@ -139,6 +141,11 @@ class SpaghettiDetector:
             logger.info(f"No spaghetti on {printerName} ({filename})")
             self._failureCounts[printerName] = 0
         return filtered
+
+    def reset(self, printerName: str) -> None:
+        """Reset the consecutive-failure counter (e.g. when a job ends)."""
+        if self._failureCounts.pop(printerName, None) is not None:
+            logger.info(f"Reset spaghetti failure count for {printerName}")
 
 
 class DetectionWorker:

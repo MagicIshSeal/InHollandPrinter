@@ -66,7 +66,7 @@ def main() -> None:
     detector = SpaghettiDetector(ml_client, image_store, printer_client)
     worker = DetectionWorker(detector)
     worker.start()
-    monitor = PrinterMonitor(printer_client, image_store)
+    monitor = PrinterMonitor(printer_client, image_store, detector)
 
     # --- startup sequence ---
     image_server.start()
