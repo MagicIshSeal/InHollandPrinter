@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+from inhollandPrinter.settings import settings
+
 REQUEST_TIMEOUT = 5
 # seconds; keep short so one dead printer doesn't stall the rest
 
@@ -28,6 +30,13 @@ class PrinterDict(dict):
 
     def public_ip_id(self, key):
         return f"{self[key]['public_ip']}/{self[key]['id']}"
+
+    def login_address(self, key):
+        """Address used for PrusaLink login. In Core One mode the printer
+        is reachable at the raw public IP; otherwise <ip>/<id>."""
+        if settings.setCoreOne:
+            return self[key]["public_ip"]
+        return self.public_ip_id(key)
 
     def get_status(self, key):
         return self[key]["status"] if "status" in self[key] else "UNKNOWN"

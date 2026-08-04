@@ -34,7 +34,7 @@ class PrinterClient:
     def getSnapshot(self, printerName: str) -> bytes:
         if settings.setCoreOne:
             return self._getCoreOneSnapshot(printerName)
-        client = login(printers.public_ip_id(printerName), printers.get_password(printerName))
+        client = login(printers.login_address(printerName), printers.get_password(printerName))
         _image = client.api_request("GET", "/api/v1/cameras/snap", raw=True)
         return _image.content
 
@@ -50,14 +50,14 @@ class PrinterClient:
         jobid = printers.get_job_id(printerName)
         if jobid is None:
             raise RuntimeError(f"No active job for {printerName}")
-        client = login(printers.public_ip_id(printerName), printers.get_password(printerName))
+        client = login(printers.login_address(printerName), printers.get_password(printerName))
         client.api_request("DELETE", f"/api/v1/job/{jobid}")
 
     def resumePrint(self, printerName: str) -> None:
         jobid = printers.get_job_id(printerName)
         if jobid is None:
             raise RuntimeError(f"No active job for {printerName}")
-        client = login(printers.public_ip_id(printerName), printers.get_password(printerName))
+        client = login(printers.login_address(printerName), printers.get_password(printerName))
         client.api_request("POST", f"/api/v1/job/{jobid}/resume")
 
 
