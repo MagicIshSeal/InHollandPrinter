@@ -44,6 +44,16 @@ class Settings(BaseSettings):
     confidenceThreshold: float = Field(default=0.5, validation_alias=AliasChoices("CONFIDENCE_THRESHOLD", "confidenceThreshold"))
     consecutiveFailureLimit: int = Field(default=3, validation_alias=AliasChoices("CONSECUTIVE_FAILURE_LIMIT", "consecutiveFailureLimit"))
 
+    # --- Printer manager API ---
+    # When set (and Core One mode is off), the manager API is POSTed a JSON
+    # cancellation notice including the latest image whenever this monitor
+    # itself stops a print after consecutive spaghetti detections.
+    managerApiUrl: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("MANAGER_API_URL", "managerApiUrl"),
+    )
+    managerApiTimeout: int = Field(default=30, validation_alias=AliasChoices("MANAGER_API_TIMEOUT", "managerApiTimeout"))
+
     # --- Logging ---
     logLevel: str = Field(default="INFO", validation_alias=AliasChoices("LOG_LEVEL", "logLevel"))
 

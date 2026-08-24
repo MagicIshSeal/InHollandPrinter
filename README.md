@@ -76,6 +76,8 @@ All via environment variables (or `.env` file):
 | `CONFIDENCE_THRESHOLD` | `0.3` | Minimum ML confidence to report/annotate spaghetti |
 | `CONSECUTIVE_FAILURE_LIMIT` | `3` | Consecutive spaghetti detections before stopping the print |
 | `ML_API_TIMEOUT` | `30` | Seconds to wait for ML API response before timing out |
+| `MANAGER_API_URL` | — | Printer-manager API that receives a JSON POST (`printer`, `reason`, base64 latest image) when the AI stops a print; unset/empty disables notifications. Never used in Core One mode |
+| `MANAGER_API_TIMEOUT` | `30` | Seconds to wait for the manager API response before timing out |
 ## Printers
 
 Edit `src/inhollandPrinter/printers.json`:
