@@ -110,10 +110,11 @@ class PrinterMonitor:
 
 
 class SpaghettiDetector:
-    def __init__(self, ml_client, image_store, printer_client):
+    def __init__(self, ml_client, image_store, printer_client, manager_client=None):
         self._mlClient = ml_client
         self._imageStore = image_store
         self._printerClient = printer_client
+        self._managerClient = manager_client
         self._failureCounts: dict[str, int] = {}
 
     def evaluate(self, printerName: str, filename: str) -> list:
@@ -133,6 +134,8 @@ class SpaghettiDetector:
                     self._printerClient.stopPrint(printerName)
                 except Exception:
                     logger.exception(f"Failed to stop print on {printerName}")
+                else:
+                    self._notifyManager(printerName)
         elif detections:
             confs = ", ".join(f"{d[1]:.0%}" for d in detections)
             logger.info(f"Spaghetti detected on {printerName} but below {threshold:.0%} confidence ({confs}) ({filename})")
@@ -141,6 +144,19 @@ class SpaghettiDetector:
             logger.info(f"No spaghetti on {printerName} ({filename})")
             self._failureCounts[printerName] = 0
         return filtered
+
+    def _notifyManager(self, printerName: str) -> None:
+        """Tell the manager API we stopped this print ourselves (AI
+        auto-cancel). Best-effort: never raises into the detector."""
+        if self._managerClient is None:
+            return
+        imagePath = self._imageStore.getLatestImagePath(printerName)
+        if imagePath is None:
+            logger.warning(f"No image on disk for {printerName}, notifying manager API without one")
+        try:
+            self._managerClient.notifyCancelled(printerName, "auto", imagePath)
+        except Exception:
+            logger.exception(f"Failed to notify manager API about cancelled print on {printerName}")
 
     def reset(self, printerName: str) -> None:
         """Reset the consecutive-failure counter (e.g. when a job ends)."""

@@ -12,6 +12,7 @@ import time
 import structlog
 
 from inhollandPrinter.imageStore import LocalImageStore
+from inhollandPrinter.managerClient import ManagerApiClient
 from inhollandPrinter.mlClient import ImageHttpServer, ObicoMLClient
 from inhollandPrinter.monitor import DetectionWorker, PrinterMonitor, SpaghettiDetector
 from inhollandPrinter.printerClient import PrinterClient
@@ -61,9 +62,19 @@ def main() -> None:
     ml_client = ObicoMLClient()
     image_store = LocalImageStore()
     image_server = ImageHttpServer()
+    # Cancel notifications: never in Core One mode, and only when configured.
+    manager_client = (
+        None
+        if settings.setCoreOne or not settings.managerApiUrl
+        else ManagerApiClient()
+    )
+    logger.info(
+        "Manager cancel notifications %s",
+        f"enabled -> {settings.managerApiUrl}" if manager_client else "disabled (Core One mode or MANAGER_API_URL unset)",
+    )
 
     # --- wiring ---
-    detector = SpaghettiDetector(ml_client, image_store, printer_client)
+    detector = SpaghettiDetector(ml_client, image_store, printer_client, manager_client=manager_client)
     worker = DetectionWorker(detector)
     worker.start()
     monitor = PrinterMonitor(printer_client, image_store, detector)
