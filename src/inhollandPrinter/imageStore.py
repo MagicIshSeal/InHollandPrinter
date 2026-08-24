@@ -60,3 +60,21 @@ class LocalImageStore:
         output = os.path.join(outDir, f"{base}_annotated.jpg")
         cv2.imwrite(output, img)
         return output
+
+    def getLatestImagePath(self, printerName: str) -> str | None:
+        """Newest annotated image for the printer, falling back to the
+        newest raw snapshot (same mtime approach as mlClient's latest-image
+        endpoints). Used for cancellation notifications."""
+        baseDir = os.path.join(self._snapshotDir, str(printerName))
+        if not os.path.isdir(baseDir):
+            return None
+        annotated, raw = [], []
+        for root, _dirs, files in os.walk(baseDir):
+            isAnnotated = os.path.basename(root) == "annotated"
+            for f in files:
+                if f.endswith(".jpg"):
+                    (annotated if isAnnotated else raw).append(os.path.join(root, f))
+        pool = annotated or raw
+        if not pool:
+            return None
+        return max(pool, key=os.path.getmtime)
