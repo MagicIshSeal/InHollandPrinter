@@ -1,4 +1,4 @@
-import base64
+import datetime
 import json
 import time
 import urllib.error
@@ -78,14 +78,15 @@ def test_manager_cancel_notification(timeout: int = 300):
         except FileNotFoundError:
             records = []
         for rec in records:
-            if rec.get("printer") != "Mock Printer":
+            if rec.get("printer_name") != "Mock Printer":
                 continue
-            assert rec["reason"] == "auto", f"Expected reason 'auto', got {rec['reason']!r}"
-            assert rec["image"], "Expected an image in the cancel notification"
-            img = base64.b64decode(rec["image"])
-            assert img[:2] == b"\xff\xd8", "Manager received a non-JPEG image"
+            datetime.datetime.fromisoformat(rec["cancelled_at"])  # ISO-8601
+            assert rec["ip"] == "mock-printer", f"Expected public_ip 'mock-printer', got {rec['ip']!r}"
+            assert rec["progress"] == "42", f"Expected progress '42', got {rec['progress']!r}"
             assert rec["image_name"].endswith(".jpg"), f"Bad image_name: {rec['image_name']!r}"
-            print(f"[test-api]   PASS — manager got auto-cancel for {rec['printer']} ({rec['image_name']})")
+            assert rec["image_size"] > 1000, f"Manager image too small: {rec['image_size']} bytes"
+            print(f"[test-api]   PASS — manager got AUTO_CANCELLED for {rec['printer_name']} "
+                  f"(ip={rec['ip']}, progress={rec['progress']}, image={rec['image_name']})")
             return
         last_err = f"{len(records)} record(s), none for 'Mock Printer'"
         time.sleep(5)

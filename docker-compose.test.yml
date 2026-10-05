@@ -24,7 +24,8 @@ services:
       - IMAGE_SERVER_PUBLIC_HOST=printer-monitor
       - LOCAL_USERNAME=test123
       - LOCAL_PASSWORD=test123
-      - MANAGER_API_URL=http://manager-api:9990/cancelled
+      - MANAGER_API_URL=http://manager-api:9990/webhook/spaghetti-detected
+      - MANAGER_API_KEY=test-secret-key
       - LOG_LEVEL=DEBUG
 
   manager-api:
@@ -33,6 +34,8 @@ services:
     volumes:
       - ./test:/test
       - manager-data:/data
+    environment:
+      - MANAGER_API_KEY=test-secret-key
 
   test-api:
     image: python:3.12-slim

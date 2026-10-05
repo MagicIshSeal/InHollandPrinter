@@ -81,6 +81,7 @@ class MockPrusaLinkHandler(http.server.BaseHTTPRequestHandler):
             },
             "job": {
                 "id": "42",
+                "progress": 42,
                 "time_remaining": TIME_REMAINING,
             },
         }
