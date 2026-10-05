@@ -50,6 +50,13 @@ class PrinterDict(dict):
     def get_time_remaining(self, key):
         return self[key]["time_remaining"] if "time_remaining" in self[key] else None
 
+    def get_progress(self, key):
+        return self[key]["progress"] if "progress" in self[key] else None
+
+    def get_ip(self, key):
+        """Public IP/address of the printer, as reported to the manager API."""
+        return self[key]["public_ip"] if "public_ip" in self[key] else None
+
     def get_job_id(self, key):
         return self[key]["job_id"] if "job_id" in self[key] else None
 

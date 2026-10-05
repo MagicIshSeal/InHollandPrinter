@@ -56,6 +56,7 @@ class PrinterMonitor:
                             "temp_nozzle": printer_state.get("temp_nozzle"),
                             "temp_bed": printer_state.get("temp_bed"),
                             "time_remaining": job_state.get("time_remaining"),
+                            "progress": job_state.get("progress"),
                             "job_id": job_state.get("id"),
                         }
                     )
@@ -74,6 +75,7 @@ class PrinterMonitor:
                             "temp_nozzle": None,
                             "temp_bed": None,
                             "time_remaining": None,
+                            "progress": None,
                             "job_id": None,
                         }
                     )
