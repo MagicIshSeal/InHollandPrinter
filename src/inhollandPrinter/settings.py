@@ -45,12 +45,17 @@ class Settings(BaseSettings):
     consecutiveFailureLimit: int = Field(default=3, validation_alias=AliasChoices("CONSECUTIVE_FAILURE_LIMIT", "consecutiveFailureLimit"))
 
     # --- Printer manager API ---
-    # When set (and Core One mode is off), the manager API is POSTed a JSON
-    # cancellation notice including the latest image whenever this monitor
-    # itself stops a print after consecutive spaghetti detections.
+    # When set (and Core One mode is off), this monitor POSTs a multipart
+    # cancellation notice (printer_name, ip, cancelled_at, progress, image)
+    # with an X-Api-Key header to managerApiUrl whenever it stops a print
+    # itself after consecutive spaghetti detections (AI auto-cancel).
     managerApiUrl: str | None = Field(
         default=None,
         validation_alias=AliasChoices("MANAGER_API_URL", "managerApiUrl"),
+    )
+    managerApiKey: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("MANAGER_API_KEY", "managerApiKey"),
     )
     managerApiTimeout: int = Field(default=30, validation_alias=AliasChoices("MANAGER_API_TIMEOUT", "managerApiTimeout"))
 
