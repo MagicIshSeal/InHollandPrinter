@@ -153,10 +153,13 @@ class SpaghettiDetector:
         if self._managerClient is None:
             return
         imagePath = self._imageStore.getLatestImagePath(printerName)
-        if imagePath is None:
-            logger.warning(f"No image on disk for {printerName}, notifying manager API without one")
         try:
-            self._managerClient.notifyCancelled(printerName, "auto", imagePath)
+            self._managerClient.notifyCancelled(
+                printerName,
+                printers.get_ip(printerName),
+                printers.get_progress(printerName),
+                imagePath,
+            )
         except Exception:
             logger.exception(f"Failed to notify manager API about cancelled print on {printerName}")
 

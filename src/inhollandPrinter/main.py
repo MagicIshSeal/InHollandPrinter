@@ -68,9 +68,15 @@ def main() -> None:
         if settings.setCoreOne or not settings.managerApiUrl
         else ManagerApiClient()
     )
+    if manager_client is None:
+        reason = "Core One mode" if settings.setCoreOne else "MANAGER_API_URL unset"
+    elif not settings.managerApiKey:
+        reason = "MANAGER_API_KEY unset"
+    else:
+        reason = None
     logger.info(
         "Manager cancel notifications %s",
-        f"enabled -> {settings.managerApiUrl}" if manager_client else "disabled (Core One mode or MANAGER_API_URL unset)",
+        "disabled (%s)" % reason if reason else f"enabled -> {settings.managerApiUrl}",
     )
 
     # --- wiring ---
