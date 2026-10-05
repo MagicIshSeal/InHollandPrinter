@@ -24,12 +24,24 @@ services:
       - IMAGE_SERVER_PUBLIC_HOST=printer-monitor
       - LOCAL_USERNAME=test123
       - LOCAL_PASSWORD=test123
+      - MANAGER_API_URL=http://manager-api:9990/cancelled
       - LOG_LEVEL=DEBUG
+
+  manager-api:
+    image: python:3.12-slim
+    command: python /test/mock_manager_api.py
+    volumes:
+      - ./test:/test
+      - manager-data:/data
 
   test-api:
     image: python:3.12-slim
     command: python /test/test_api.py
     volumes:
       - ./test:/test
+      - manager-data:/data
     depends_on:
       - printer-monitor
+
+volumes:
+  manager-data:

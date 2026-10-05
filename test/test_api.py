@@ -1,9 +1,11 @@
+import base64
 import json
 import time
 import urllib.error
 import urllib.request
 
 BASE = "http://printer-monitor:8080"
+MANAGER_RECORDS = "/data/manager_received.jsonl"
 
 
 def _get(path: str):
@@ -65,10 +67,36 @@ def test_latest_404():
         print(f"[test-api]   PASS — 404: {err['error']}")
 
 
+def test_manager_cancel_notification(timeout: int = 300):
+    print("[test-api] Waiting for manager API auto-cancel notification...")
+    deadline = time.time() + timeout
+    last_err = "no records yet"
+    while time.time() < deadline:
+        try:
+            with open(MANAGER_RECORDS) as f:
+                records = [json.loads(line) for line in f if line.strip()]
+        except FileNotFoundError:
+            records = []
+        for rec in records:
+            if rec.get("printer") != "Mock Printer":
+                continue
+            assert rec["reason"] == "auto", f"Expected reason 'auto', got {rec['reason']!r}"
+            assert rec["image"], "Expected an image in the cancel notification"
+            img = base64.b64decode(rec["image"])
+            assert img[:2] == b"\xff\xd8", "Manager received a non-JPEG image"
+            assert rec["image_name"].endswith(".jpg"), f"Bad image_name: {rec['image_name']!r}"
+            print(f"[test-api]   PASS — manager got auto-cancel for {rec['printer']} ({rec['image_name']})")
+            return
+        last_err = f"{len(records)} record(s), none for 'Mock Printer'"
+        time.sleep(5)
+    raise AssertionError(f"No manager cancel notification within {timeout}s ({last_err})")
+
+
 if __name__ == "__main__":
     print("[test-api] Waiting for printer-monitor to produce images...")
     _wait_for_annotated()
     test_list_all()
     test_latest_image()
     test_latest_404()
+    test_manager_cancel_notification()
     print("[test-api] ALL PASS")
